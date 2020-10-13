@@ -5,6 +5,47 @@ import axios from 'axios'
 
 const utils_vue = new Vue();
 
+// 登录方法，因为是在进入vue页面之前就要调用，因此放在了公用ajax方法之外
+function login(code) {
+  return new Promise((resolve, reject) => {
+    axios({
+      method: 'post',
+      url: config.api + 'login/getTokenByCode',
+      data: qs.stringify({ code: code }),
+      timeout: 5000  // 请求超时时间
+    }).then(res => {
+      if (res.data.code === 1) {
+        resolve(res.data.data);
+      } else {
+        reject(res.data);
+      }
+    }).catch(() => {
+      utils_vue.$toast('网络超时');
+    })
+  })
+}
+
+// 跳转微信授权，获取code
+function auth(routePath) {
+  let appid = config.appid;
+  let redirectUri = encodeURIComponent(config.vue_base + routePath);
+  location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`;
+}
+
+// 获取url参数对象（目前只在登录判断中用到）
+function get_params() {
+  let url = location.search;
+  let params = {};
+  if (url.indexOf('?') !== -1) {
+    let str = url.substr(1);
+    let strs = str.split('&');
+    for (var i = 0; i < strs.length; i++) {
+      let kv = strs[i].split('='); // key 和 value
+      params[kv[0]] = unescape(kv[1]);
+    }
+  }
+  return params;
+}
 
 const date_format = (date, fmt = 'yyyy.MM.dd') => {
   if (date) {
@@ -206,6 +247,7 @@ const get_status = (refund, check, expire, return_data = 'tip') => {
 };
 
 export default {
+  login, auth, get_params,
   date_format,    //格式化时间
   ajax,           //请求后台数据
   format_img,     //补全图片路径

@@ -12,9 +12,9 @@
           <!--<li>-->
           <!--<router-link to="/activitie">专题活动</router-link>-->
           <!--</li>-->
-          <!--<li>-->
-          <!--<router-link to="/information">资讯中心</router-link>-->
-          <!--</li>-->
+          <li>
+          <router-link to="/news">资讯中心</router-link>
+          </li>
           <!--<li>-->
           <!--<router-link to="/calligraphy">书画</router-link>-->
           <!--</li>-->

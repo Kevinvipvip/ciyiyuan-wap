@@ -50,7 +50,6 @@
         this.save = '';
       },
       get_code() {
-        console.log(typeof this.tel);
         if (!this.tel.trim()) {
           this.$toast("请输入手机号")
         } else if (!this.save.trim()) {

@@ -41,7 +41,21 @@
       <h3>瓷艺园介绍</h3>
       <span>|</span>
     </div>
-
+    <div class="brief">
+      <div class="img"><img :src="about.intro_cover+'?x-oss-process=image/resize,w_750'"/></div>
+      <div class="brief-cont">
+        <p>{{about.desc}}</p>
+      </div>
+      <div class="video-box">
+        <video-player class="video-player vjs-custom-skin"
+                      ref="videoPlayer"
+                      :playsinline="true"
+                      :options="playerOptions"
+                      @play="onPlayerPlay($event)"
+                      @pause="onPlayerPause($event)">
+        </video-player>
+      </div>
+    </div>
     <Footer></Footer>
   </div>
 </template>
@@ -60,11 +74,6 @@
       return {
         banner: [],
         swiperOption: {
-          // 是一个组件自有属性，如果notNextTick设置为true，组件则不会通过NextTick来实例化swiper，
-          // 也就意味着你可以在第一时间获取到swiper对象，
-          // 假如你需要刚加载遍使用获取swiper对象来做什么事，
-          // 那么这个属性一定要是true
-          // notNextTick: true,
           loop: true,
           autoplay: {
             delay: 3000,
@@ -96,17 +105,37 @@
 
         cate_length: 4,//显示在首页的分类个数
         collect_cate: [],//藏品分类
+
+        about: {},//关于瓷艺园
+        playerOptions: {//视频播放器配置
+          autoplay: false,
+          muted: false, // 默认情况下将会消除任何音频。
+          loop: true, // 导致视频一结束就重新开始。
+          preload: 'auto', // 建议浏览器在<video>加载元素后是否应该开始下载视频数据。auto浏览器选择最佳行为,立即开始加载视频（如果浏览器支持）
+          language: 'zh-CN',
+          aspectRatio: '16:9', // 将播放器置于流畅模式，并在计算播放器的动态大小时使用该值。值应该代表一个比例 - 用冒号分隔的两个数字（例如"16:9"或"4:3"）
+          fluid: true, // 当true时，Video.js player将拥有流体大小。换句话说，它将按比例缩放以适应其容器。
+          sources: [{
+            type: 'video/mp4',
+            src: ''
+          }],
+          // 你的封面地址
+          poster: '',
+          width: document.documentElement.clientWidth,
+          // 允许覆盖Video.js无法播放媒体源时显示的默认信息。
+          notSupportedMessage: '此视频暂无法播放，请稍后再试'
+        },
       }
     },
     mounted() {
-      this.utils.ajax('index/slideList').then((slides) => {
+      this.utils.ajax('index/slideList').then((slides) => {//获取轮播图列表
         this.utils.aliyun_format(slides, 'pic');
         this.banner = slides;
       });
-      this.utils.ajax('index/articleList', { page: 1, perpage: 5 }).then((res) => {
+      this.utils.ajax('index/articleList', { page: 1, perpage: 5 }).then((res) => {//获取资讯列表
         this.information = res.list;
       });
-      this.utils.ajax('index/collectCateList').then((res) => {
+      this.utils.ajax('index/collectCateList').then((res) => {//获取馆藏精品分类
         this.utils.aliyun_format(res, 'pic', 2);
         let arr = [];
         for (let i = 0; i < this.cate_length; i++) {
@@ -115,19 +144,28 @@
           }
         }
         this.collect_cate = arr;
-      })
+      });
+      this.utils.ajax('index/aboutUs').then((res) => {//获取瓷艺园简介
+        this.playerOptions.sources = [{
+          type: 'video/mp4',
+          src: res.video_url
+        }];
+        this.playerOptions.poster = res.intro_cover + '?x-oss-process=image/resize,w_750';
+        this.utils.aliyun_format(res, 'logo');
+        this.about = res;
+      });
     },
     methods: {
-      // 点击前往资讯详情
-      openInfoDetail(id) {
+      openInfoDetail(id) {// 点击前往资讯详情
         this.$router.push({
-          name: 'infodetail',
+          name: 'newsdetail',
           query: {
             id: id
           }
         })
       },
-      goToCollect(id, name) {
+
+      goToCollect(id, name) {// 点击前往藏品分类列表
         this.$router.push({
           path: '/collectionsclassify',
           query: {
@@ -135,7 +173,13 @@
             name: name
           }
         })
-      }
+      },
+      onPlayerPlay() {
+        console.log('播放')
+      },
+      onPlayerPause() {
+        console.log('暂停')
+      },
     }
   }
 </script>
@@ -255,6 +299,7 @@
           &:nth-child(-n+4) {
             margin-top: 0;
           }
+
           &:nth-child(4n) {
             margin-right: 0;
           }
@@ -262,5 +307,44 @@
       }
     }
 
+
+    .brief {
+      margin: 10px 40px;
+
+      .img {
+        min-height: 300px;
+      }
+
+      .brief-cont {
+        margin-top: 26px;
+        margin-bottom: 20px;
+
+        p {
+          text-align: justify;
+          font-size: 26px;
+          line-height: 40px;
+          color: #666666;
+        }
+      }
+
+      .video-box {
+        /deep/ .vjs-custom-skin {
+          .video-js .vjs-big-play-button {
+            width: 100px !important;
+            height: 100px !important;
+            border-radius: 50%;
+            z-index: 100;
+            margin: 0 !important;
+            transform: translate(-50%, -50%);
+            border: solid 1px #979797;
+          }
+
+          .video-js .vjs-big-play-button {
+            line-height: 100px !important;
+          }
+        }
+      }
+
+    }
   }
 </style>

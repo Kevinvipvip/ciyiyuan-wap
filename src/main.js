@@ -20,6 +20,13 @@ import config from './config'
 
 Vue.prototype.config = config;
 
+// 引入视频播放插件
+import VideoPlayer from 'vue-video-player';
+
+require('video.js/dist/video-js.css');
+require('vue-video-player/src/custom-theme.css');
+Vue.use(VideoPlayer);
+
 // 公共组件
 import Header from './components/Header'
 import Footer from './components/Footer'

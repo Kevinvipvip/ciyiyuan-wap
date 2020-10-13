@@ -1,13 +1,13 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const routes = [
   {
     meta: { title: '瓷艺园', title_bg: '#ffffff' },
     path: '/',
-    name: 'Home',
+    name: 'home',
     component: () => import('../views/Home.vue')//首页
   }, {
     meta: { title: '登录' },
@@ -15,10 +15,15 @@ const routes = [
     name: 'login',
     component: () => import( '../views/Login.vue')// 登录页
   }, {
-    meta: { title: '关于我们' },
-    path: '/about',
-    name: 'About',
-    component: () => import('../views/About.vue')//关于我们
+    meta: { title: '新闻资讯' },
+    path: '/news',
+    name: 'news',
+    component: () => import('../views/News.vue')//新闻资讯
+  }, {
+    meta: { title: '资讯详情' },
+    path: '/newsdetail',
+    name: 'newsdetail',
+    component: () => import('../views/NewsDetail.vue')//新闻资讯详情
   }, {
     meta: { title: '馆藏精品', keepAlive: true },
     path: '/collections',
