@@ -53,7 +53,7 @@
 
 
       getArticleList(page, callback) {
-        this.utils.ajax('index/articleList', { page: page, perpage: 10 }).then((res) => {
+        this.utils.ajax(this, 'index/articleList', { page: page, perpage: 10 }).then((res) => {
           this.count = res.count;
           this.utils.aliyun_format(res.list, 'pic', 2);
           for (let i = 0; i < res.list.length; i++) {

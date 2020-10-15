@@ -128,14 +128,14 @@
       }
     },
     mounted() {
-      this.utils.ajax('index/slideList').then((slides) => {//获取轮播图列表
+      this.utils.ajax(this, 'index/slideList').then((slides) => {//获取轮播图列表
         this.utils.aliyun_format(slides, 'pic');
         this.banner = slides;
       });
-      this.utils.ajax('index/articleList', { page: 1, perpage: 5 }).then((res) => {//获取资讯列表
+      this.utils.ajax(this, 'index/articleList', { page: 1, perpage: 5 }).then((res) => {//获取资讯列表
         this.information = res.list;
       });
-      this.utils.ajax('index/collectCateList').then((res) => {//获取馆藏精品分类
+      this.utils.ajax(this, 'index/collectCateList').then((res) => {//获取馆藏精品分类
         this.utils.aliyun_format(res, 'pic', 2);
         let arr = [];
         for (let i = 0; i < this.cate_length; i++) {
@@ -145,7 +145,7 @@
         }
         this.collect_cate = arr;
       });
-      this.utils.ajax('index/aboutUs').then((res) => {//获取瓷艺园简介
+      this.utils.ajax(this, 'index/aboutUs').then((res) => {//获取瓷艺园简介
         this.playerOptions.sources = [{
           type: 'video/mp4',
           src: res.video_url

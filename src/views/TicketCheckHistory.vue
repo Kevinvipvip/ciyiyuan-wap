@@ -49,7 +49,7 @@
           page: page,
           perpage: this.perpage
         };
-        this.utils.ajax('my/getCheckList', post).then((list) => {
+        this.utils.ajax(this, 'my/getCheckList', post).then((list) => {
           if (list.length < this.perpage) {
             this.finished = true;
           }

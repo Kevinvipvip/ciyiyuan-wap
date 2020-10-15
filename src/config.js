@@ -5,8 +5,8 @@
  * api_base: api根域名
  * local_base: 本地根域名
  */
-
-let base = 'http://mp.tjtcy.cn';
+let real_url = 'http://tjtcy.cn';//线上正式版网址域名
+let base = 'http://mp.tjtcy.cn';//后台数据接口域名
 let aliyun_base = 'https://tjtcy.oss-cn-beijing.aliyuncs.com';
 
 let notice = '唐山博物馆采取限流预约措施参观，请观众仔细阅读：\n' +
@@ -23,10 +23,13 @@ let notice = '唐山博物馆采取限流预约措施参观，请观众仔细阅
 
 
 let config = {
+  real_url: real_url + '/',//生成二维码使用
   url: base + '/',
   api: base + '/api/',
   aliyun: aliyun_base + '/',//阿里云oss链接域名
-  // vue_base: base + '/dist/#',
+  auth_url: base + '/wap/#',
+  // auth_url: 'http://192.168.31.20:8080/wap/#',
+  appid: 'wxa4ef22add86bdb0c',
 
   tel_reg: /^1([358][0-9]|4[579]|66|7[0135678]|9[89])[0-9]{8}$/,
 

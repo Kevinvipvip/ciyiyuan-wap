@@ -31,7 +31,7 @@
     data() {
       return { fooetr: {} };
     }, mounted() {
-      this.utils.ajax('index/aboutUs').then((res) => {
+      this.utils.ajax(this, 'index/aboutUs').then((res) => {
         // console.log(res);
         // res.tcy_qrcode = res.tcy_qrcode.replace(/https:\/\/mp.tjtcy.cn/g, 'https://mp.tjtcy.cn/');
         this.utils.aliyun_format(res, 'logo');

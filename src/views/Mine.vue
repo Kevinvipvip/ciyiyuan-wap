@@ -5,9 +5,9 @@
         <router-link tag="div" :to="{path: '/login',query: {url: this.$route.path,params: this.$route.query}}"
                      class="btn-cont" v-if="is_login">点击登录
         </router-link>
-        <div class="mine-cont" @click="change_mine" v-else>
+        <div class="mine-cont" @click="mine_info" v-else>
           <div class="mine-img" :style="'background-image:url('+mine.avatar+')'"></div>
-          <div class="mine-nickname" v-if="mine.id">id：{{mine.id}}</div>
+          <div class="mine-nickname">id：{{mine.uid}}</div>
           <div class="mine-nickname">{{mine.nickname}}</div>
         </div>
       </div>
@@ -89,12 +89,12 @@
             url: '/history',
             class: 'icon-record',
             name: '购票记录'
+          }, {
+            url: '/address?link_type=0',
+            class: 'icon-address',
+            name: '收货地址'
           },
           // {
-          //   url: '/address?link_type=0',
-          //   class: 'icon-address',
-          //   name: '收货地址'
-          // }, {
           //   url: '/mycollect',
           //   class: 'icon-collect',
           //   name: '我的收藏'
@@ -112,15 +112,20 @@
       };
     },
     mounted() {
+      // console.log(this.utils.hide_middle_content("450881199602066557"));
       this.token = localStorage.getItem('token');
       if (this.token) {
-        this.utils.ajax('my/getUserInfo').then((res) => {
+        this.utils.ajax(this, 'my/getUserInfo').then((res) => {
           if (!res.avatar) {
             res.avatar = avatar;
             res.nickname = '添加昵称';
           }
+          if (!res.uid) {
+            res.uid = '绑定手机号后拥有';
+          }
           this.is_login = false;
           this.mine = res;
+          console.log(res);
           if (res.manager === 1) {
             let add_obj = {
               url: '/check_history',
@@ -129,6 +134,8 @@
             };
             this.myService.push(add_obj);
           }
+        }).catch(() => {
+          this.is_login = true;
         });
       } else {
         this.is_login = true;
@@ -136,28 +143,47 @@
     },
     methods: {
       // 点击修改个人资料
-      change_mine() {
-        console.log('修改资料')
+      mine_info() {
+        this.$router.push({ name: 'info' });
       },
       // 点击进去我的订单
       goToOrder(id) {
-        if (id === 5) {
-          this.$router.push({
-            name: 'aftermarket'
-          })
-        } else {
-          this.$router.push({
-            name: 'ordercenter',
-            query: {
-              id: id
-            }
-          })
-        }
+        console.log(id);
+        this.$dialog.alert({
+          message: '待开发',
+          confirmButtonColor: '#b38146'
+        }).then(() => {
+
+        })
+        // if (id === 5) {
+        //   this.$router.push({
+        //     name: 'aftermarket'
+        //   })
+        // } else {
+        //   this.$router.push({
+        //     name: 'ordercenter',
+        //     query: {
+        //       id: id
+        //     }
+        //   })
+        // }
       },
 
       // 没有登录时，点击提示
       to_login() {
-
+        this.$dialog.confirm({
+          message: '需要登录后操作，是否前往登录？',
+          confirmButtonColor: '#b38146'
+        }).then(() => {
+          this.$router.push({
+            path: '/login',
+            query: {
+              url: this.$route.path,
+              params: this.$route.query
+            }
+          });
+        }).catch(() => {
+        });
       }
     }
   };
@@ -175,7 +201,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      z-index: 9999;
+      z-index: 99;
     }
 
     .mine-title {

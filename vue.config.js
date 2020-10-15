@@ -1,8 +1,9 @@
-const path = require('path')
+const path = require('path');
 
 module.exports = {
+  outputDir:'wap',
   assetsDir: 'static',
-  publicPath: '/dist/',
+  publicPath: '/wap/',
   chainWebpack: config => {
     const types = ['vue-modules', 'vue', 'normal-modules', 'normal'];
     types.forEach(type => addStyleResource(config.module.rule('scss').oneOf(type)));

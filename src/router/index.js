@@ -25,6 +25,25 @@ const routes = [
     name: 'newsdetail',
     component: () => import('../views/NewsDetail.vue')//新闻资讯详情
   }, {
+    meta: { title: '九文轩书画院' },
+    path: '/calligraphy',
+    name: 'calligraphy',
+    component: () => import('../views/Calligraphy.vue')//九文轩书画院
+  }, {
+    meta: { title: '摄影' },
+    path: '/photography',
+    name: 'photography',
+    component: () => import('../views/Photography.vue')//摄影
+  }, {
+    meta: { title: '人物简介' },
+    path: '/authordetail',
+    name: 'authordetail',
+    component: () => import('../views/AuthorDetail.vue')// 人物简介页
+  }, {
+    path: '/worksdetail',
+    name: 'worksdetail',
+    component: () => import('../views/WorksDetail.vue')// 书画和摄影详情页
+  }, {
     meta: { title: '馆藏精品', keepAlive: true },
     path: '/collections',
     name: 'collections',
@@ -74,6 +93,26 @@ const routes = [
     path: '/mine',
     name: 'mine',
     component: () => import('../views/Mine.vue')//个人中心
+  }, {
+    meta: { title: '个人信息' },
+    path: '/info',
+    name: 'info',
+    component: () => import('../views/MineInfo.vue')//个人信息
+  }, {
+    meta: { title: '订单中心' },
+    path: '/ordercenter',
+    name: 'ordercenter',
+    component: () => import('../views/MineOrderCenter.vue')//订单中心
+  }, {
+    meta: { title: '地址管理' },
+    path: '/address',
+    name: 'address',
+    component: () => import('../views/MineAddress.vue')//地址管理
+  }, {
+    meta: { title: '地址管理' },
+    path: '/editaddress',
+    name: 'editaddress',
+    component: () => import('../views/MineAddressEdit.vue')//编辑或新增地址页
   }
 ];
 

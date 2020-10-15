@@ -13,14 +13,14 @@
           <!--<router-link to="/activitie">专题活动</router-link>-->
           <!--</li>-->
           <li>
-          <router-link to="/news">资讯中心</router-link>
+            <router-link to="/news">资讯中心</router-link>
           </li>
-          <!--<li>-->
-          <!--<router-link to="/calligraphy">书画</router-link>-->
-          <!--</li>-->
-          <!--<li>-->
-          <!--<router-link to="/photography">摄影</router-link>-->
-          <!--</li>-->
+          <li>
+            <router-link to="/calligraphy">书画</router-link>
+          </li>
+          <li>
+            <router-link to="/photography">摄影</router-link>
+          </li>
           <li>
             <router-link to="/ticket">门票</router-link>
           </li>
@@ -62,6 +62,20 @@
         switch (to.name) {
           case 'collectionsclassify':
             this.title = to.query.name;
+            break;
+          case 'worksdetail':
+            if (to.query.type === 1) {
+              this.title = '书画作品详情';
+            } else if (to.query.type === 2) {
+              this.title = '摄影作品详情';
+            }
+            break;
+          case 'editaddress':
+            if (to.query.type === 0) {
+              this.title = '新增地址'
+            } else {
+              this.title = '编辑地址'
+            }
             break;
           default:
             this.title = to.meta.title;

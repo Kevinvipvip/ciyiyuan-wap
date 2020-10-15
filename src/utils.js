@@ -10,7 +10,7 @@ function login(code) {
   return new Promise((resolve, reject) => {
     axios({
       method: 'post',
-      url: config.api + 'login/getTokenByCode',
+      url: config.api + 'weixin/login',
       data: qs.stringify({ code: code }),
       timeout: 5000  // 请求超时时间
     }).then(res => {
@@ -28,7 +28,7 @@ function login(code) {
 // 跳转微信授权，获取code
 function auth(routePath) {
   let appid = config.appid;
-  let redirectUri = encodeURIComponent(config.vue_base + routePath);
+  let redirectUri = encodeURIComponent(config.auth_url + routePath);
   location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`;
 }
 
@@ -75,7 +75,7 @@ const date_format = (date, fmt = 'yyyy.MM.dd') => {
 };
 
 // 通用ajax方法
-const ajax = (url, data, handle_code_list = []) => {
+const ajax = (vue, url, data, handle_code_list = []) => {
   data = data || {};
   let token = localStorage.getItem('token') || '';
   if (data instanceof FormData) {
@@ -96,34 +96,37 @@ const ajax = (url, data, handle_code_list = []) => {
       } else {
         // 如果错误码在自行处理的列表里，则reject回去
         if (handle_code_list.indexOf(res.data.code) !== -1) {
-          reject(res.data)
+          reject(res.data);
         } else {
           switch (res.data.code) {
             case -3:  // token无效
             case -5:  // token未传
             case -6:  // token未传
               // 重新跳转授权
-              utils_vue.$dialog.alert({
+              vue.$dialog.confirm({
                 message: '登录已失效',
+                confirmButtonColor: '#b38146'
               }).then(() => {
                 localStorage.clear();
-                utils_vue.$router.push({
+                vue.$router.push({
                   path: '/login',
                   query: {
-                    url: utils_vue.$route.path,
-                    params: utils_vue.$route.query
+                    url: vue.$route.path,
+                    params: vue.$route.query
                   }
                 });
+              }).catch(() => {
+                reject();
               });
               break;
             default:
-              utils_vue.$toast(res.data.message);
+              vue.$toast(res.data.message);
               break
           }
         }
       }
     }).catch(() => {
-      utils_vue.$toast('网络超时');
+      vue.$toast('网络超时');
     })
   })
 };
@@ -245,6 +248,25 @@ const get_status = (refund, check, expire, return_data = 'tip') => {
   }
   return data;
 };
+/*
+* 遮盖重要信息的部分内容；
+* text变量为string，
+* type是隐藏的类型，默认值为身份证（IDcard）
+* IDcard为身份证
+* phone为手机号码
+* */
+const hide_middle_content = (text, type = 'IDcard') => {
+  let cont;
+  switch (type) {
+    case 'IDcard':
+      cont = text.replace(/^(.{6})(?:\d+)(.{3})$/, "$1**********$2");
+      break;
+    case 'phone':
+      cont = text.replace(/^(.{3})(.{4})(.{4})$/, "$1****$3");
+      break;
+  }
+  return cont;
+};
 
 export default {
   login, auth, get_params,
@@ -253,4 +275,5 @@ export default {
   format_img,     //补全图片路径
   aliyun_format,  //补全阿里云图片路径
   get_status,  //检测订单状态
+  hide_middle_content,//隐藏中间内容
 }

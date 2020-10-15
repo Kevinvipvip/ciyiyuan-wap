@@ -80,7 +80,7 @@
           message: '确认退票吗？',
           confirmButtonColor: '#b38146'
         }).then(() => {
-          this.utils.ajax('my/ticketOrderRefund', post).then(() => {
+          this.utils.ajax(this, 'my/ticketOrderRefund', post).then(() => {
             this.$dialog.alert({
               message: '退票成功',
               confirmButtonColor: '#b38146'
@@ -117,7 +117,7 @@
 
       // 获取订单详情
       getOrderDetail() {
-        this.utils.ajax('my/ticketOrderDetail', { order_id: this.id }).then((detail) => {
+        this.utils.ajax(this, 'my/ticketOrderDetail', { order_id: this.id }).then((detail) => {
           detail.status = this.utils.get_status(detail.refund, detail.check, detail.expire);
           detail.create_time = this.utils.date_format(detail.create_time, 'yyyy-MM-dd hh:mm:ss');
           detail.btn_type = this.utils.get_status(detail.refund, detail.check, detail.expire, 'type');

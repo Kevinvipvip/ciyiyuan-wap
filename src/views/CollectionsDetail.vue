@@ -96,7 +96,7 @@
           type: 'loading',
           message: '数据加载中...'
         });
-        this.utils.ajax('collect/collectDetail', { id: id }).then((res) => {
+        this.utils.ajax(this, 'collect/collectDetail', { id: id }).then((res) => {
           // console.log(res);
           this.utils.aliyun_format(res, 'audio_url');
           this.utils.aliyun_format(res.pics);
@@ -110,7 +110,7 @@
           this.collect = res;
           this.music = music
         }).then(() => {
-          this.utils.ajax('collect/similarCollectList', { id: id }).then((res) => {
+          this.utils.ajax(this, 'collect/similarCollectList', { id: id }).then((res) => {
             this.utils.aliyun_format(res, 'cover', 2);
             this.recommendCollect = res;
             this.$toast.clear()

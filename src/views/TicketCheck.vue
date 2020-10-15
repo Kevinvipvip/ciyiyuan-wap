@@ -51,7 +51,7 @@
           message: '确认核销',
           confirmButtonColor: '#b38146'
         }).then(() => {
-          this.utils.ajax('my/checkTicket', { order_id: this.id, list_id: id }).then(() => {
+          this.utils.ajax(this, 'my/checkTicket', { order_id: this.id, list_id: id }).then(() => {
             this.$toast('核销成功');
             this.detail.list[index].status = '已核销';
             this.detail.list[index].status_type = 2;
@@ -70,7 +70,7 @@
       },
       // 获取订单详情
       getOrderDetail() {
-        this.utils.ajax('my/checkOrderDetail', { order_id: this.id }).then((detail) => {
+        this.utils.ajax(this, 'my/checkOrderDetail', { order_id: this.id }).then((detail) => {
           detail.status = this.utils.get_status(detail.refund, detail.check, detail.expire);
           detail.create_time = this.utils.date_format(detail.create_time, 'yyyy-MM-dd hh:mm:ss');
           for (let i = 0; i < detail.list.length; i++) {

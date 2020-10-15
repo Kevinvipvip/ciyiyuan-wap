@@ -20,7 +20,7 @@
     mounted() {
       this.news_id = parseInt(this.$route.query.id);
 
-      this.utils.ajax('index/getArticleDetail', { id: this.news_id }).then((res) => {
+      this.utils.ajax(this, 'index/getArticleDetail', { id: this.news_id }).then((res) => {
         this.utils.aliyun_format(res, 'pic');
         // res.content = res.content.replace(/\/ueditor\/php\/upload\//g, this.config.url + 'ueditor/php/upload/');
         this.new_detail = res;

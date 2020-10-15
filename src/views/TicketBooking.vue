@@ -140,7 +140,7 @@
             name: this.name,
             idcard: this.IDcard
           };
-          this.utils.ajax('ticket/addVisitor', post).then(() => {
+          this.utils.ajax(this, 'ticket/addVisitor', post).then(() => {
             this.$dialog.alert({
               message: '添加成功',
               confirmButtonColor: '#b38146'
@@ -159,7 +159,7 @@
       },
       // 点击删除按钮
       fn_delete(IDcard) {
-        this.utils.ajax('ticket/visitorDelete', { idcard: IDcard }).then(() => {
+        this.utils.ajax(this, 'ticket/visitorDelete', { idcard: IDcard }).then(() => {
           this.$dialog.alert({
             message: '已删除',
             confirmButtonColor: '#b38146'
@@ -169,7 +169,7 @@
         })
       },
       getVisitorList(complete) {
-        this.utils.ajax('ticket/visitorList').then(list => {
+        this.utils.ajax(this, 'ticket/visitorList').then(list => {
           this.tourist = list;
           if (complete) {
             complete(list.length);
@@ -200,7 +200,7 @@
                 message: '您总共预约了' + this.tourist.length + '个人的门票',
                 confirmButtonColor: '#b38146'
               }).then(() => {
-                this.utils.ajax('ticket/purchase', data, [46, 55, 56]).then(() => {
+                this.utils.ajax(this, 'ticket/purchase', data, [46, 55, 56]).then(() => {
                   this.btn_click = true;
                   this.$dialog.alert({
                     message: "预约成功",
@@ -280,7 +280,7 @@
         return day;
       },
       get_calender() {
-        this.utils.ajax('ticket/paiqiList').then((res) => {
+        this.utils.ajax(this, 'ticket/paiqiList').then((res) => {
           // console.log(res)
           if (res.length > 0) {
             this.paiqi = res;

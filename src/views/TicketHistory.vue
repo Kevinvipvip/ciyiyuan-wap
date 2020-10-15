@@ -38,7 +38,7 @@
     mounted() {
       let token = localStorage.getItem('token');
       if (token) {
-        this.utils.ajax('my/ticketOrderList').then((list) => {
+        this.utils.ajax(this, 'my/ticketOrderList').then((list) => {
           this.count = list.count;
           for (let i = 0; i < list.list.length; i++) {
             // list.list[i].status = this.utils.get_status(list.list[i].refund, list.list[i].check, list.list[i].expire);

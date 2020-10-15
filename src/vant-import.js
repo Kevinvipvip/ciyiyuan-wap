@@ -6,17 +6,21 @@
 import Vue from 'vue'
 
 import {
+  AddressEdit,
   Toast,
   Popup,
   Pagination,
-  Dialog, Calendar, Cell, Checkbox, List
+  Dialog, Calendar, Cell, Checkbox, List, Tab, Tabs
 } from 'vant'
 
 Vue.use(Toast)
+  .use(AddressEdit)
   .use(Popup)
   .use(Dialog)
   .use(Calendar)
   .use(Cell)
   .use(Checkbox)
   .use(List)
+  .use(Tab)
+  .use(Tabs)
   .use(Pagination);

@@ -50,7 +50,7 @@
 
       // 获取藏品列表
       getCollectListList(page, callback) {
-        this.utils.ajax('collect/collectList', { page: page, perpage: 10 }).then((res) => {
+        this.utils.ajax(this, 'collect/collectList', { page: page, perpage: 10 }).then((res) => {
           // console.log(res);
           this.count = res.count;
           this.utils.aliyun_format(res.list, 'cover');
