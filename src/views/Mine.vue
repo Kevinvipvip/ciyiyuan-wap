@@ -7,7 +7,7 @@
         </router-link>
         <div class="mine-cont" @click="mine_info" v-else>
           <div class="mine-img" :style="'background-image:url('+mine.avatar+')'"></div>
-          <div class="mine-nickname">id：{{mine.uid}}</div>
+          <div class="mine-nickname" v-if="mine.uid">id：{{mine.uid}}</div>
           <div class="mine-nickname">{{mine.nickname}}</div>
         </div>
       </div>

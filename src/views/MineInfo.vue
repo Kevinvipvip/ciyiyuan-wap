@@ -11,9 +11,24 @@
         <div class="ipt-box"><input type="text" v-model="nickname"></div>
         <div class="iconfont icon-right icon"></div>
       </div>
-      <div class="info-item">
+      <div class="info-item" v-if="tel">
         <div class="label">手机号</div>
-        <div class="ipt-box"><input type="text" v-model="tel"></div>
+        <div class="ipt-box"><input type="text" disabled v-model="tel"></div>
+        <div class="iconfont icon-right icon"></div>
+      </div>
+      <div class="info-item" @click="bind_tel" v-else>
+        <div class="label">手机号</div>
+        <div class="bind">绑定手机号</div>
+        <div class="iconfont icon-right icon"></div>
+      </div>
+      <div class="info-item" v-if="wxauth">
+        <div class="label">微信号</div>
+        <div class="bind">已绑定</div>
+        <div class="iconfont icon-right icon"></div>
+      </div>
+      <div class="info-item" @click="wx_auth" v-else>
+        <div class="label">微信号</div>
+        <div class="bind">绑定微信号</div>
         <div class="iconfont icon-right icon"></div>
       </div>
     </div>
@@ -30,21 +45,75 @@
         avatar: avatar,
         nickname: "设置昵称",
         tel: '',
+        wxauth: false,
       };
     },
     mounted() {
-      this.utils.ajax(this, 'my/getUserInfo').then((res) => {
-        console.log(res);
-        if (res.avatar)
-          this.avatar = res.avatar;
-        if (res.nickname)
-          this.nickname = res.nickname;
-        this.tel = this.utils.hide_middle_content(res.tel, 'phone');
-      });
+      let params = this.utils.get_params();
+      this.auth_code = params['code'];
+      let wxauth = localStorage.getItem('wxauth');
+      if (!wxauth) {
+        if (this.auth_code) {
+          console.log(this.auth_code, '111');
+          this.wx_auth_login(this.auth_code);
+        }
+      }
+      this.getMineInfo();
     },
     methods: {
       save() {
         console.log('保存成功')
+      },
+      // 点击绑定手机号
+      bind_tel() {
+        console.log('绑定手机号');
+        this.$router.push({
+          path: '/bind_tel',
+          query: {
+            url: this.$route.path,
+            params: this.$route.query
+          }
+        });
+      },
+      // 点击绑定微信
+      wx_auth() {
+        console.log('绑定微信');
+        this.utils.auth(this.$route.fullPath);
+      },
+      wx_auth_login(code) {
+        this.$toast.loading({
+          mask: true,
+          duration: 10000,
+          message: '登录中'
+        });
+
+        this.utils.ajax(this, 'login/bindWeixin', { code: code }).then(res => {
+          console.log(res);
+          // localStorage.setItem('tel', res.tel);
+          localStorage.setItem('avatar', res.avatar);
+          localStorage.setItem('nickname', res.nickname);
+          // localStorage.setItem('uid', res.uid);
+          localStorage.setItem('wxauth', res.wxauth);
+          this.$toast.clear();
+          this.$dialog.alert({
+            message: '绑定成功',
+            confirmButtonColor: '#b38146'
+          }).then(() => {
+            this.getMineInfo();
+          });
+        });
+      },
+      getMineInfo() {
+        this.utils.ajax(this, 'my/getUserInfo').then((res) => {
+          console.log(res);
+          this.wxauth = res.wxauth;
+          if (res.avatar)
+            this.avatar = res.avatar;
+          if (res.nickname)
+            this.nickname = res.nickname;
+          if (res.tel)
+            this.tel = this.utils.hide_middle_content(res.tel, 'phone');
+        });
       }
     }
   };
@@ -105,7 +174,17 @@
             height: 100%;
             font-size: 36px;
             text-align: right;
+            background: none;
+            outline: none;
           }
+        }
+
+        .bind {
+          flex-grow: 1;
+          height: 100%;
+          line-height: 80px;
+          font-size: 36px;
+          text-align: right;
         }
       }
     }

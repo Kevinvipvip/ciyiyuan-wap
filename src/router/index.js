@@ -109,10 +109,15 @@ const routes = [
     name: 'address',
     component: () => import('../views/MineAddress.vue')//地址管理
   }, {
-    meta: { title: '地址管理' },
+    // meta: { title: '地址管理' },
     path: '/editaddress',
     name: 'editaddress',
     component: () => import('../views/MineAddressEdit.vue')//编辑或新增地址页
+  }, {
+    meta: { title: '绑定手机号' },
+    path: '/bind_tel',
+    name: 'bind_tel',
+    component: () => import('../views/BindTel.vue')//绑定手机号
   }
 ];
 

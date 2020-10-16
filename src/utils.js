@@ -116,6 +116,7 @@ const ajax = (vue, url, data, handle_code_list = []) => {
                   }
                 });
               }).catch(() => {
+                localStorage.clear();
                 reject();
               });
               break;
