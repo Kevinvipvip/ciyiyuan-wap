@@ -33,9 +33,9 @@
           <!--<li>-->
           <!--<router-link to="/identify">文物鉴定</router-link>-->
           <!--</li>-->
-          <!--<li>-->
-          <!--<router-link to="/subscribe">预约摄影</router-link>-->
-          <!--</li>-->
+          <li>
+          <router-link to="/pin_index">拼图游戏</router-link>
+          </li>
           <li>
             <router-link to="/mine">个人中心</router-link>
           </li>

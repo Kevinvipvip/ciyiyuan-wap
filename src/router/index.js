@@ -118,6 +118,16 @@ const routes = [
     path: '/bind_tel',
     name: 'bind_tel',
     component: () => import('../views/BindTel.vue')//绑定手机号
+  }, {
+    meta: { title: '拼图游戏' },
+    path: '/pin_index',
+    name: 'pin_index',
+    component: () => import('../views/PinTu.vue')//拼图游戏
+  }, {
+    meta: { title: '拼图' },
+    path: '/pin',
+    name: 'pin',
+    component: () => import('../views/Pin.vue')//拼图
   }
 ];
 

@@ -3,7 +3,13 @@
     <div class="info">
       <div class="info-item">
         <div class="label">头像</div>
-        <div class="img"><img :src="avatar"/></div>
+        <div class="upload-box">
+          <van-uploader :max-size="512000"
+                        :after-read="uploadAfter"
+                        @oversize="oversize">
+            <div class="img"><img :src="avatar"/></div>
+          </van-uploader>
+        </div>
         <div class="iconfont icon-right icon"></div>
       </div>
       <div class="info-item">
@@ -46,6 +52,9 @@
         nickname: "设置昵称",
         tel: '',
         wxauth: false,
+
+        old_nickname: '',//修改前的nickname
+        upload_img: '',//上传的图片路径
       };
     },
     mounted() {
@@ -54,7 +63,6 @@
       let wxauth = localStorage.getItem('wxauth');
       if (!wxauth) {
         if (this.auth_code) {
-          console.log(this.auth_code, '111');
           this.wx_auth_login(this.auth_code);
         }
       }
@@ -62,7 +70,24 @@
     },
     methods: {
       save() {
-        console.log('保存成功')
+        let post = {};
+        if (this.upload_img)
+          post.avatar = this.upload_img;
+        if (this.nickname !== this.old_nickname)
+          post.nickname = this.nickname;
+        if (Object.keys(post).length) {
+          this.utils.ajax(this, 'my/modifyUserInfo', post).then(() => {
+            this.$dialog.alert({
+              message: '保存成功',
+              confirmButtonColor: '#b38146'
+            }).then(() => {
+              this.upload_img = '';
+              this.old_nickname = this.nickname;
+            });
+          });
+        } else {
+          this.$toast('未做任何修改');
+        }
       },
       // 点击绑定手机号
       bind_tel() {
@@ -77,7 +102,6 @@
       },
       // 点击绑定微信
       wx_auth() {
-        console.log('绑定微信');
         this.utils.auth(this.$route.fullPath);
       },
       wx_auth_login(code) {
@@ -88,11 +112,8 @@
         });
 
         this.utils.ajax(this, 'login/bindWeixin', { code: code }).then(res => {
-          console.log(res);
-          // localStorage.setItem('tel', res.tel);
           localStorage.setItem('avatar', res.avatar);
           localStorage.setItem('nickname', res.nickname);
-          // localStorage.setItem('uid', res.uid);
           localStorage.setItem('wxauth', res.wxauth);
           this.$toast.clear();
           this.$dialog.alert({
@@ -105,16 +126,32 @@
       },
       getMineInfo() {
         this.utils.ajax(this, 'my/getUserInfo').then((res) => {
-          console.log(res);
           this.wxauth = res.wxauth;
           if (res.avatar)
             this.avatar = res.avatar;
-          if (res.nickname)
+          if (res.nickname) {
+            this.old_nickname = res.nickname;
             this.nickname = res.nickname;
+          }
           if (res.tel)
             this.tel = this.utils.hide_middle_content(res.tel, 'phone');
         });
-      }
+      },
+
+      //上传图片
+      uploadAfter(file) {
+        let post = new FormData();
+        post.append('file', file.file);
+        this.utils.ajax(this, 'upload/uploadFile', post).then(img => {
+          this.upload_img = img;
+          this.avatar = this.utils.aliyun_format(img);
+        });
+      },
+      // 上传图片大小超出限制
+      oversize(file, detail) {
+        console.log(file, detail);
+        this.$toast('请上传小于512kb的图片');
+      },
     }
   };
 </script>
@@ -148,17 +185,21 @@
           flex-shrink: 0;
         }
 
-        .img {
+        .upload-box {
           flex-grow: 1;
           display: flex;
           justify-content: flex-end;
-          height: 90%;
 
-          img {
-            height: 100%;
-            width: auto;
-            background-color: #333333;
+          .img {
+            width: 75px;
+            height: 75px;
+            box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.3);
             border-radius: 50%;
+            overflow: hidden;
+
+            img {
+              height: 100%;
+            }
           }
         }
 
