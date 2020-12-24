@@ -5,8 +5,8 @@
  * api_base: api根域名
  * local_base: 本地根域名
  */
-let real_url = 'http://tjtcy.cn';//线上正式版网址域名
-let base = 'http://mp.tjtcy.cn';//后台数据接口域名
+let real_url = 'https://tjtcy.cn';//线上正式版网址域名
+let base = 'https://mp.tjtcy.cn';//后台数据接口域名
 let aliyun_base = 'https://tjtcy.oss-cn-beijing.aliyuncs.com';
 
 let notice = '唐山博物馆采取限流预约措施参观，请观众仔细阅读：\n' +
