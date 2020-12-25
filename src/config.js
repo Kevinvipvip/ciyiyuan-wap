@@ -1,4 +1,4 @@
-let base = 'http://tjtcy.cn';
+let base = 'https://tjtcy.cn';
 let aliyun_base = 'https://tjtcy.oss-cn-beijing.aliyuncs.com';
 
 
