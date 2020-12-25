@@ -1,57 +1,11 @@
-import Vue from 'vue'
-import qs from 'qs'
-import config from './config'
-import axios from 'axios'
-
-const utils_vue = new Vue();
-
-// 登录方法，因为是在进入vue页面之前就要调用，因此放在了公用ajax方法之外
-function login(code) {
-  return new Promise((resolve, reject) => {
-    axios({
-      method: 'post',
-      url: config.api + 'weixin/login',
-      data: qs.stringify({ code: code }),
-      timeout: 5000  // 请求超时时间
-    }).then(res => {
-      if (res.data.code === 1) {
-        resolve(res.data.data);
-      } else {
-        reject(res.data);
-      }
-    }).catch(() => {
-      utils_vue.$toast('网络超时');
-    })
-  })
-}
-
-// 跳转微信授权，获取code
-function auth(routePath) {
-  let appid = config.appid;
-  let redirectUri = encodeURIComponent(config.auth_url + routePath);
-  location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`;
-}
-
-// 获取url参数对象（目前只在登录判断中用到）
-function get_params() {
-  let url = location.search;
-  let params = {};
-  if (url.indexOf('?') !== -1) {
-    let str = url.substr(1);
-    let strs = str.split('&');
-    for (var i = 0; i < strs.length; i++) {
-      let kv = strs[i].split('='); // key 和 value
-      params[kv[0]] = unescape(kv[1]);
-    }
-  }
-  return params;
-}
+import config from './config';
+import qs from 'qs';
 
 const date_format = (date, fmt = 'yyyy.MM.dd') => {
   if (date) {
     // 如果是数字类型
     if (typeof date === 'number') {
-      date = new Date(date * 1000);
+      date = date.toString()[12] ? new Date(date) : new Date(date * 1000);
     }
 
     var o = {
@@ -74,18 +28,17 @@ const date_format = (date, fmt = 'yyyy.MM.dd') => {
   }
 };
 
-// 通用ajax方法
 const ajax = (vue, url, data, handle_code_list = []) => {
   data = data || {};
   let token = localStorage.getItem('token') || '';
   if (data instanceof FormData) {
-    data.append('token', token)
+    data.append('token', token);
   } else {
-    data.token = token
+    data.token = token;
   }
 
   return new Promise((resolve, reject) => {
-    axios({
+    vue.$axios({
       method: 'post',
       url: config.api + url,
       data: data instanceof FormData ? data : qs.stringify(data),  // 如果是FormData类型则为上传文件，data原样上传
@@ -96,18 +49,17 @@ const ajax = (vue, url, data, handle_code_list = []) => {
       } else {
         // 如果错误码在自行处理的列表里，则reject回去
         if (handle_code_list.indexOf(res.data.code) !== -1) {
-          reject(res.data);
+          reject(res.data)
         } else {
           switch (res.data.code) {
             case -3:  // token无效
             case -5:  // token未传
             case -6:  // token未传
+              localStorage.clear();
               // 重新跳转授权
-              vue.$dialog.confirm({
+              vue.$dialog.alert({
                 message: '登录已失效',
-                confirmButtonColor: '#b38146'
               }).then(() => {
-                localStorage.clear();
                 vue.$router.push({
                   path: '/login',
                   query: {
@@ -115,14 +67,14 @@ const ajax = (vue, url, data, handle_code_list = []) => {
                     params: vue.$route.query
                   }
                 });
-              }).catch(() => {
-                localStorage.clear();
-                reject();
               });
               break;
+            // case 44:
+            //   vue.$toast(res.data.data);
+            //   break;
             default:
-              vue.$toast(res.data.message);
-              break
+              vue.$toast(res.data.data);
+              break;
           }
         }
       }
@@ -131,7 +83,6 @@ const ajax = (vue, url, data, handle_code_list = []) => {
     })
   })
 };
-
 // 处理阿里云图片路径
 const aliyun_format = (obj, aliyun_field = 'pic') => {
   if (obj instanceof Array) {
@@ -186,56 +137,64 @@ const empty_or = (img) => {
   }
 };
 
-const get_status = (refund, check, expire, return_data = 'tip') => {
+const get_status = (is_pay,refund, check, expire, return_data = 'tip') => {
   let status, img, data, type;
-  if (expire !== 0) {
-    switch (expire) {
-      case 1:
-        status = '部分过期';
-        type = 2;
-        img = config.aliyun + '/static/ticket-expired-part.png';
-        break;
-      case 2:
-        status = '已过期';
-        type = 2;
-        img = config.aliyun + '/static/ticket-expired.png';
-        break;
-    }
-  } else {
-    if (check !== 0) {
-      switch (check) {
+
+  if (is_pay === 1) {
+    if (expire !== 0) {
+      switch (expire) {
         case 1:
-          status = '部分核销';
-          type = 1;
-          img = config.aliyun + '/static/ticket-hexiao-part.png';
+          status = '部分过期';
+          type = 2;
+          img = config.aliyun + '/static/ticket-expired-part.png';
           break;
         case 2:
-          status = '已核销';
+          status = '已过期';
           type = 2;
-          img = config.aliyun + '/static/ticket-hexiao.png';
+          img = config.aliyun + '/static/ticket-expired.png';
           break;
       }
     } else {
-      if (refund !== 0) {
-        switch (refund) {
+      if (check !== 0) {
+        switch (check) {
           case 1:
-            status = '部分退票';
+            status = '部分核销';
             type = 1;
-            img = config.aliyun + '/static/ticket-refund-part.png';
+            img = config.aliyun + '/static/ticket-hexiao-part.png';
             break;
           case 2:
-            status = '已退票';
+            status = '已核销';
             type = 2;
-            img = config.aliyun + '/static/ticket-refund.png';
+            img = config.aliyun + '/static/ticket-hexiao.png';
             break;
         }
       } else {
-        status = '预约成功';
-        type = 1;
-        img = config.aliyun + '/static/ticket-succ.png';
+        if (refund !== 0) {
+          switch (refund) {
+            case 1:
+              status = '部分退票';
+              type = 1;
+              img = config.aliyun + '/static/ticket-refund-part.png';
+              break;
+            case 2:
+              status = '已退票';
+              type = 2;
+              img = config.aliyun + '/static/ticket-refund.png';
+              break;
+          }
+        } else {
+          status = '预约成功';
+          type = 1;
+          img = config.aliyun + '/static/ticket-succ.png';
+        }
       }
     }
+  } else {
+    status = '待支付';
+    type = 3;
+    img = config.aliyun + '/static/ticket-no-pay.png';
   }
+
   switch (return_data) {
     case 'tip':
       data = status;
@@ -249,32 +208,87 @@ const get_status = (refund, check, expire, return_data = 'tip') => {
   }
   return data;
 };
-/*
-* 遮盖重要信息的部分内容；
-* text变量为string，
-* type是隐藏的类型，默认值为身份证（IDcard）
-* IDcard为身份证
-* phone为手机号码
-* */
-const hide_middle_content = (text, type = 'IDcard') => {
-  let cont;
-  switch (type) {
-    case 'IDcard':
-      cont = text.replace(/^(.{6})(?:\d+)(.{3})$/, "$1**********$2");
-      break;
-    case 'phone':
-      cont = text.replace(/^(.{3})(.{4})(.{4})$/, "$1****$3");
-      break;
+
+const jump = (vue, url) => {
+  let page = url.split('?');
+  if (url) {
+    if (url.indexOf('http') !== -1) {
+      location.href = url;
+    } else {
+      if (page[1]) {
+        let arr_query = page[1].split('&'), query = {};
+        for (let i = 0; i < arr_query.length; i++) {
+          let qurey_item = arr_query[i].split("=");
+          query[qurey_item[0]] = qurey_item[1];
+        }
+        vue.$router.push({ path: '/' + page[0], query: query });
+      } else {
+        vue.$router.push({ path: '/' + page[0] });
+      }
+    }
   }
-  return cont;
 };
 
+// 将秒转换成时分秒
+const secondsFormat = (s) => {
+  var day = Math.floor(s / (24 * 3600)); // Math.floor()向下取整
+  var hour = Math.floor((s - day * 24 * 3600) / 3600);
+  var minute = Math.floor((s - day * 24 * 3600 - hour * 3600) / 60);
+  var second = s - day * 24 * 3600 - hour * 3600 - minute * 60;
+  return day + "天" + hour + "时" + minute + "分" + second + "秒";
+};
+const s_to_hs = (s) => {
+  //将秒转换成时分秒
+  //计算分钟
+  //算法：将秒数除以60，然后下舍入，既得到分钟数
+  let hous, min;
+  min = Math.floor(s / 60);
+  hous = Math.floor(min / 60);
+  //计算秒
+  //算法：取得秒%60的余数，既得到秒数
+  min = min % 60;
+  s = s % 60;
+  //将变量转换为字符串
+  min += '';
+  s += '';
+  //如果只有一位数，前面增加一个0
+  min = (min.length == 1) ? '0' + min : min;
+  s = (s.length == 1) ? '0' + s : s;
+  return hous + ':' + min + ':' + s;
+};
+
+
+// 跳转微信授权，获取code
+function auth(routePath) {
+  let appid = config.appid;
+  let redirectUri = encodeURIComponent(config.vue_base + routePath);
+  location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
+}
+
+// 获取url参数对象（目前只在登录判断中用到）
+function get_params() {
+  let url = location.search;
+  let params = {};
+  if (url.indexOf('?') !== -1) {
+    let str = url.substr(1);
+    let strs = str.split('&');
+    for (var i = 0; i < strs.length; i++) {
+      let kv = strs[i].split('=');// key 和 value
+      params[kv[0]] = unescape(kv[1]);
+    }
+  }
+  return params
+}
+
 export default {
-  login, auth, get_params,
+  auth,
+  get_params,
   date_format,    //格式化时间
   ajax,           //请求后台数据
   format_img,     //补全图片路径
   aliyun_format,  //补全阿里云图片路径
   get_status,  //检测订单状态
-  hide_middle_content,//隐藏中间内容
+  jump,  //公共跳页方法
+  secondsFormat,  //将秒转换成日时分秒
+  s_to_hs,  //将秒转换成时分秒
 }

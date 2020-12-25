@@ -1,4 +1,4 @@
-# ciyiyuan-wap
+# ts-wisdom
 
 ## Project setup
 ```

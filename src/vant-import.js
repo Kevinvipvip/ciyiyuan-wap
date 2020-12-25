@@ -6,8 +6,19 @@
 import Vue from 'vue'
 
 import {
-  Toast, AddressEdit, Popup, Dialog, Calendar, Cell, Checkbox, List, Tab, Tabs, Uploader, Pagination
+  Toast,
+  Popup,
+  Pagination,
+  Dialog, Calendar, Cell, Checkbox, List, Icon, Picker
 } from 'vant'
 
-Vue.use(Toast).use(AddressEdit).use(Popup).use(Dialog).use(Calendar).use(Cell).use(Checkbox).use(List)
-  .use(Tab).use(Tabs).use(Uploader).use(Pagination);
+Vue.use(Toast)
+  .use(Popup)
+  .use(Dialog)
+  .use(Calendar)
+  .use(Cell)
+  .use(Checkbox)
+  .use(List)
+  .use(Icon)
+  .use(Picker)
+  .use(Pagination);

@@ -24,7 +24,7 @@
           <p>{{item.name}}</p>
           <p><span>身份证</span>{{item.idcard}}</p>
           <p>普通观众</p>
-          <p><span>免费参观凭证</span>免费</p>
+          <p><span>门票价格</span>￥{{item.price}}</p>
         </li>
       </ul>
     </div>
@@ -56,12 +56,16 @@
                                       maxlength="18" v-model="IDcard" placeholder="请输入证件号码"></div>
         </div>
         <div class="input">
-          <div class="check-box">
-            <div class="check"><img :src="check_img_two"/></div>
-            <span>免费参观凭证</span>
-          </div>
-          <p>免费</p>
+          <label for="cardType">门票价格</label>
+          <div class="ipt-box price"><input type="text" checked id="price" disabled :value="'￥'+price"></div>
         </div>
+        <!--<div class="input">-->
+        <!--<div class="check-box">-->
+        <!--&lt;!&ndash;<div class="check"><img :src="check_img_two"/></div>&ndash;&gt;-->
+        <!--<span>门票价格</span>-->
+        <!--</div>-->
+        <!--<p>￥{{price}}</p>-->
+        <!--</div>-->
 
         <div class="btn-add-box">
           <p @click="fn_reset">重置</p>
@@ -78,6 +82,7 @@
       return {
         token: '',
         paiqi: [],
+        price: '0.00',
         date: '',
         submit_date: '',
         show: false, add_tour: false,
@@ -90,14 +95,18 @@
         // 添加观众
         name: '',
         IDcard: '',
-        check_img_one: this.config.aliyun + '/static/ticket-checked.png',
-        check_img_two: this.config.aliyun + '/static/ticket-check.png'
+        check_img_one: this.config.aliyun + 'static/ticket-checked.png',
+        check_img_two: this.config.aliyun + 'static/ticket-check.png'
       };
     },
     mounted() {
       this.token = localStorage.getItem('token');
+      this.utils.ajax(this, 'ticket/ticketDetail').then(res => {
+        this.price = res.price;
+      });
       if (this.token) {
         this.getVisitorList();
+
       }
     },
     methods: {
@@ -185,32 +194,44 @@
             this.get_calender();
             return;
           }
-          if (this.btn_click) {
-            this.btn_click = false;
-            let data = {
-              use_date: this.submit_date,
-            };
-            if (this.tourist.length <= 0) {
-              this.$dialog.alert({
-                message: "请添加参观者",
-                confirmButtonColor: '#b38146'
-              })
-            } else {
+          if (this.tourist.length <= 0) {
+            this.$dialog.alert({
+              message: "请添加参观者",
+              confirmButtonColor: '#b38146'
+            })
+          } else {
+            if (this.btn_click) {
+              this.btn_click = false;
+              let data = {
+                use_date: this.submit_date,
+              };
               this.$dialog.confirm({
-                message: '您总共预约了' + this.tourist.length + '个人的门票',
+                message: '您即将提交' + this.tourist.length + '个人的预约门票',
                 confirmButtonColor: '#b38146'
               }).then(() => {
-                this.utils.ajax(this, 'ticket/purchase', data, [46, 55, 56]).then(() => {
-                  this.btn_click = true;
-                  this.$dialog.alert({
-                    message: "预约成功",
-                    confirmButtonText: "查看订单",
-                    confirmButtonColor: '#b38146'
-                  }).then(() => {
-                    this.$router.push({
-                      name: 'history'
-                    })
-                  });
+                this.utils.ajax(this, 'ticket/purchase', data, [46, 55, 56]).then(res => {
+                  if (res.paid) {
+                    this.btn_click = true;
+                    this.$dialog.confirm({
+                      message: "预约成功",
+                      confirmButtonText: "查看订单",
+                      confirmButtonColor: '#b38146',
+                      cancelButtonText: "继续预约",
+                      cancelButtonColor: '#b38146'
+                    }).then(() => {
+                      this.btn_click = true;
+                      this.$router.push({
+                        name: 'history'
+                      })
+                    }).catch(() => {
+                      this.btn_click = true;
+                      this.date = '';
+                      this.submit_date = '';
+                      this.tourist = [];
+                    });
+                  } else {
+                    this.$router.push({ name: 'pay', query: { pay_order_sn: res.pay_order_sn } });
+                  }
                 }).catch(err => {
                   console.log(err);
                   let text;
@@ -428,7 +449,7 @@
 
         .input {
           display: flex;
-          justify-content: space-between;
+          /*justify-content: space-between;*/
           align-items: center;
           height: 60px;
           margin: 0 30px 18px;
@@ -457,12 +478,23 @@
               width: 100%;
               border: none;
             }
+
+            &.price {
+              border: none;
+
+              input {
+                color: #ff4c4c;
+              }
+            }
           }
 
           .check-box {
-            flex-grow: 1;
+            /*flex-grow: 1;*/
             display: flex;
             align-items: center;
+            margin-right: 27px;
+            font-size: 28px;
+            color: #584e43;
 
             .check {
               width: 24px;
@@ -482,7 +514,7 @@
 
           p {
             font-size: 30px;
-            color: #000;
+            color: #ff4c4c;
           }
         }
 

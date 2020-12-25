@@ -1,8 +1,8 @@
 <template>
   <div class="ticket-detail page">
-    <!--<div class="common-title">订单详情</div>-->
+    <div class="common-title">订单详情</div>
     <div class="detail" v-if="detail.list">
-      <div class="status">{{detail.status}}</div>
+      <div class="status">{{detail.status_tip}}</div>
       <p>预约编号：{{detail.pay_order_sn}}</p>
       <p>预约时间：{{detail.create_time}}</p>
       <p>参观日期：{{detail.use_date}}</p>
@@ -18,17 +18,22 @@
               <img :src="item.is_checked?inactiveIcon:''"/>
             </i>
             <div class="p-box">
-              <p>免费参观凭证</p>
-              <p class="status">{{item.status}}</p>
+              <p>门票价格：￥{{detail.unit_price}}</p>
+              <p v-if="item.check_time">核销时间：{{item.check_time}}</p>
+              <p class="status">{{item.status_tip}}</p>
             </div>
           </div>
         </div>
         <!--<span>0</span>-->
+        <span v-if="item.status_type===1" @click="createCode(index)"><img src="../assets/icon-check-code.png"/></span>
       </li>
     </ul>
     <div class="fill-bottom"></div>
-    <div class="btn" v-if="detail.btn_type === 1">
-      <p @click="createCode">生成入馆二维码</p>
+    <div class="btn" v-if="detail.btn_type === 3">
+      <p @click="to_pay(detail.pay_order_sn)">去支付</p>
+      <!--<p v-else class="none-click">退票</p>-->
+    </div>
+    <div class="btn" v-else-if="detail.btn_type === 1">
       <p @click="show_checkbox = !show_checkbox" v-if="detail.refund_btn">退票</p>
       <p v-else class="none-click">退票</p>
     </div>
@@ -37,11 +42,14 @@
       <span>退款总计：￥{{refund_price}}</span>
       <p @click="fn_refund">确认退票</p>
     </div>
-    <div class="qr-code" @click="show_qrcode = false" :class="show_qrcode?'show':''">
+    <div class="qr-code" @click="close_qrcode" :class="show_qrcode?'show':''">
       <div class="code-box">
         <img :src="code_bg">
         <div class="qrcode">
           <div id="qrCode" class="code" ref="qrCodeDiv"></div>
+        </div>
+        <div class="tip-bg">
+          <p>请保持屏幕亮度</p>
         </div>
       </div>
     </div>
@@ -54,7 +62,7 @@
   export default {
     data() {
       return {
-        inactiveIcon: this.config.aliyun + '/static/ticket-checked.png',
+        inactiveIcon: this.config.aliyun + 'static/ticket-checked.png',
         id: 0,
         detail: {},
 
@@ -64,7 +72,13 @@
 
         refund_price: '0.00',//退款总计
         show_qrcode: false,//显示二维码
-        code_bg: this.config.aliyun + '/static/ticket-code-bg.png',
+        code_bg: this.config.aliyun + 'static/ticket-code-bg.png',
+
+        clock: 0,
+        ckeck_clock: 0,//一分钟以内可重复扫码
+        check_list_clock: 0,//列表中一分钟内可以重复调出二维码
+        setTimeout: 0,
+        closeTimeout: 120
       };
     },
     mounted() {
@@ -72,7 +86,16 @@
       this.id = parseInt(this.$route.query.id);
       this.getOrderDetail();
     },
+    destroyed() {
+      window.clearTimeout(this.clock);
+      window.clearTimeout(this.check_clock);
+      window.clearTimeout(this.check_list_clock);
+    },
     methods: {
+      to_pay(pay_order_sn) {
+        this.$router.push({ name: 'pay', query: { pay_order_sn: pay_order_sn } });
+      },
+
       // 点击退票按钮
       fn_refund() {
         let post = { order_id: this.id, list_id: this.refund_ticket };
@@ -97,13 +120,16 @@
         if (this.show_checkbox) {
           if (this.detail.list[index].refund !== 1) {
             let arr = [];
+            let price = 0;
             this.detail.list[index].is_checked = !this.detail.list[index].is_checked;
             for (let i = 0; i < this.detail.list.length; i++) {
               if (this.detail.list[i].is_checked) {
                 arr.push(this.detail.list[i].id);
+                price += parseFloat(this.detail.unit_price);
               }
             }
             this.refund_ticket = arr;
+            this.refund_price = price;
             if (this.refund_ticket.length > 0) {
               this.last_refund = true;
             } else {
@@ -114,35 +140,62 @@
         }
       },
 
+      // 点击关闭二维码
+      close_qrcode() {
+        this.show_qrcode = false;
+        this.setTimeout = 0;
+        window.clearTimeout(this.clock);
+        window.clearTimeout(this.ckeck_clock);
+        this.getOrderDetail();
+      },
 
       // 获取订单详情
       getOrderDetail() {
         this.utils.ajax(this, 'my/ticketOrderDetail', { order_id: this.id }).then((detail) => {
-          detail.status = this.utils.get_status(detail.refund, detail.check, detail.expire);
+          detail.status_tip = this.utils.get_status(detail.status, detail.refund, detail.check, detail.expire);
           detail.create_time = this.utils.date_format(detail.create_time, 'yyyy-MM-dd hh:mm:ss');
-          detail.btn_type = this.utils.get_status(detail.refund, detail.check, detail.expire, 'type');
+          detail.btn_type = this.utils.get_status(detail.status, detail.refund, detail.check, detail.expire, 'type');
           for (let i = 0; i < detail.list.length; i++) {
             detail.list[i].is_checked = false;
-            if (detail.list[i].expire === 0) {
-              if (detail.list[i].refund === 0) {
-                if (detail.list[i].check === 0) {
-                  detail.list[i].status = '待检票';
-                  detail.list[i].status_type = 1;
+            if (detail.status === 1) {
+              if (detail.list[i].expire === 0) {
+                if (detail.list[i].refund === 0) {
+                  if (detail.list[i].check === 0) {
+                    detail.list[i].status_tip = '待检票';
+                    detail.list[i].status_type = 1;
+                  } else {
+                    let now_timestamp = Math.ceil(new Date().getTime() / 1000);
+                    let check_timestamp = detail.list[i].check_time;
+                    detail.list[i].check_time = this.utils.date_format(detail.list[i].check_time, 'yyyy-MM-dd hh:mm:ss');
+                    if ((now_timestamp - check_timestamp) <= 60) {
+                      detail.list[i].status_type = 1;
+                      if (detail.list[i].diff_time !== 1) {
+                        this.check_list_clock = setTimeout(() => {
+                          this.detail.list[i].status_type = 2;
+                          console.log(this.detail.list[i].status_type);
+                          window.clearTimeout(this.check_list_clock);
+                        }, detail.list[i].diff_time);
+                      }
+                    } else {
+                      detail.list[i].status_type = 2;
+                    }
+                    detail.list[i].status_tip = '已核销';
+                  }
                 } else {
                   detail.list[i].status_type = 2;
-                  detail.list[i].status = '已核销';
+                  detail.list[i].status_tip = '已退票';
                 }
               } else {
+                detail.list[i].status_tip = '已过期';
                 detail.list[i].status_type = 2;
-                detail.list[i].status = '已退票';
               }
             } else {
-              detail.list[i].status = '已过期';
-              detail.list[i].status_type = 2;
+              detail.list[i].status_tip = '待支付';
+              detail.list[i].status_type = 3;
             }
           }
           this.detail = detail;
-          console.log(this.detail)
+          // console.log(this.detail)
         })
       },
 
@@ -156,14 +209,38 @@
           correctLevel: QRCode.CorrectLevel.L // 容错率，L/M/H
         });
       },
-      createCode() {
-        this.show_qrcode = true;
-        this.fn_createCode()
+      createCode(index) {
+        this.utils.ajax(this, 'my/genQrcodeStr', { list_id: this.detail.list[index].id }, [44]).then((res) => {
+          // console.log(res);
+          this.show_qrcode = true;
+          this.fn_createCode(res);
+          this.lookOrderStatus(index)
+        }).catch(() => {
+          this.$dialog.alert({ message: '仅在入馆当天方可生成入馆二维码', confirmButtonColor: '#b38146' })
+        });
       },
-      fn_createCode() {
+      fn_createCode(str) {
         this.qrcode.clear();
-        this.qrcode.makeCode(this.config.url + 'wap/#/ticket_check?id=' + this.id)
+        this.qrcode.makeCode(str);
       },
+
+      lookOrderStatus(index) {
+        this.utils.ajax(this, 'my/ticketOrderStatus', { list_id: this.detail.list[index].id }).then((res) => {
+          if (res.check === 0) {
+            this.setTimeout += 2;
+            if (this.setTimeout < this.closeTimeout) {
+              this.clock = setTimeout(() => {
+                this.lookOrderStatus(index)
+              }, 2000);
+            }
+          } else {
+            this.ckeck_clock = setTimeout(() => {
+              this.show_qrcode = false;
+              this.getOrderDetail();
+            }, res.diff_time);
+          }
+        });
+      }
     }
   }
   ;
@@ -208,9 +285,20 @@
         align-items: center;
 
         span {
-          font-size: 30px;
-          margin-right: 24px;
-          color: #333333;
+          width: 80px;
+          height: 80px;
+          /*box-sizing: border-box;*/
+          /*padding: 15px;*/
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background-color: #b38146;
+          box-shadow: 0 10px 25px 0 rgba(179, 129, 70, 0.35);
+          border-radius: 10px;
+
+          img {
+            width: 80%;
+          }
         }
 
         p {
@@ -351,10 +439,48 @@
           .code {
             padding: 15px;
             display: flex;
-            margin-top: 20%;
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
+          }
+        }
+
+        .tip-bg {
+          background-color: rgb(179, 129, 70);
+          height: 120px;
+          border-radius: 20px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+
+          &:before {
+            content: '';
+            display: block;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgb(51, 50, 49);
+            top: -13px;
+            left: -10px;
+            position: absolute;
+          }
+
+          &:after {
+            content: '';
+            display: block;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgb(51, 50, 49);
+            top: -13px;
+            right: -10px;
+            position: absolute;
+          }
+
+          p {
+            color: #ffffff;
+            font-size: 35px;
           }
         }
       }

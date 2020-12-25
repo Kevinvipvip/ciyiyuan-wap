@@ -1,6 +1,6 @@
 <template>
   <div class="check-history page">
-    <!--<div class="common-title">我的核销历史</div>-->
+    <div class="common-title">我的核销历史</div>
     <!--<van-list-->
     <!--v-model="loading"-->
     <!--:finished="finished"-->

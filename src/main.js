@@ -1,38 +1,19 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
-
-// import Axios from 'axios'
-//
-// Vue.prototype.$axios = Axios;
-
-import 'vant/lib/index.css'
-import './vant-import' // 引入需要的vant组件
+import config from './config'
+import utils from './utils'
+import axios from 'axios'
 
 Vue.config.productionTip = false;
-// 引入工具js
-import utils from './utils'
-
-Vue.prototype.utils = utils;
-
-// 公共配置
-import config from './config'
 
 Vue.prototype.config = config;
+Vue.prototype.utils = utils;
+Vue.prototype.$axios = axios;
 
-// 引入视频播放插件
-import VideoPlayer from 'vue-video-player';
-
-require('video.js/dist/video-js.css');
-require('vue-video-player/src/custom-theme.css');
-Vue.use(VideoPlayer);
-
-// 公共组件
-import Header from './components/Header'
-import Footer from './components/Footer'
-
-Vue.component('Header', Header);
-Vue.component('Footer', Footer);
+// 引入vant样式
+import 'vant/lib/index.css';
+import './vant-import' // 引入需要的vant组件
 
 // 设置1rem是屏幕的1/10宽
 window.onresize = setHtmlFontSize;
@@ -48,4 +29,4 @@ setHtmlFontSize();
 new Vue({
   router,
   render: h => h(App)
-}).$mount('#app')
+}).$mount('#app');

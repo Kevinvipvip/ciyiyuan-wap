@@ -1,350 +1,441 @@
 <template>
   <div class="home page">
+    <!--<div class="title">唐山博物馆</div>-->
+
     <!--轮播图-->
-    <div class="swiper">
-      <swiper v-if="banner.length>0" :options="swiperOption" class="swiper-wrap" ref="mySwiper">
-        <swiper-slide v-for="(item,index) in banner" :key="index" class="my-swiper-item"
-                      :style="'background-image: url('+item.pic+'?x-oss-process=image/resize,w_750)'">
-          <router-link v-if="item.url" class="router-link" :to="item.url"></router-link>
-        </swiper-slide>
-        <!-- 常见的小圆点 -->
-        <div class="swiper-pagination" v-for="(item,index) in banner" :key="index" slot="pagination"></div>
+    <div class="swiper-box">
+      <swiper class='swiper' :options="banner" v-if="swiper.length>1">
+
+        <swiper-slide v-for="(item, index) in swiper" :key="index" class="swiper-item"
+                      :style="'background-image: url('+item.pic+')'"></swiper-slide>
+        <!--:style="'background-color: '+item.bg"></swiper-slide>-->
+        <div class="swiper-pagination my-swiper-pagination" v-for="(item,index) in swiper" :key="index"
+             slot="pagination"></div>
       </swiper>
     </div>
-    <!--资讯-->
-    <div class="information">
-      <p class="information-title">资讯</p>
-      <swiper v-if="information.length>0" :options="informationOption" class="information-wrap" ref="mySwiper">
-        <swiper-slide v-for="(item,index) in information" :key="index" class="information-wrap-item">
-          <p @click="openInfoDetail(item.id)">{{item.title}}</p>
-        </swiper-slide>
-      </swiper>
+
+    <!--门票预约-->
+    <div class="ticket-booking white">
+      <div class="home-title"><span>门票预约</span>
+        <router-link to="/ticket" class="btn">立即预约</router-link>
+      </div>
+      <p>【开放时间】<br> 周一全天 闭馆<br> 周二 - 周日9:00开馆-16:30停止检票-17:00闭馆<span>* 周一逢国家法定节假日全天开放，除夕、大年初一闭馆</span></p>
     </div>
-    <!--公共的标题-->
-    <div class="title">
-      <span>|</span>
-      <h3>藏品分类</h3>
-      <span>|</span>
+
+    <!--精品馆藏-->
+    <div class="collection white">
+      <div class="home-title"><span>精品馆藏</span>
+        <router-link to="/collection" class="btn more">查看更多<img src="../assets/icon-right.png"></router-link>
+      </div>
+      <div class="collect-swiper-box">
+        <swiper class='collect-swiper' :options="collectSwiper" v-if="collection.length>1">
+
+          <swiper-slide v-for="(item, index) in collection" :key="index" class="collect-swiper-item">
+            <router-link :to="{path:'/collect-detail',query:{id:item.id}}" tag="div" class="collect-item">
+              <div class="img" :style="'background-image: url('+item.cover+')'"></div>
+              <p class="one-line-ellipsis">{{item.title}}</p>
+            </router-link>
+          </swiper-slide>
+
+        </swiper>
+      </div>
     </div>
-    <div class="collect-cate">
+
+    <!--新闻资讯-->
+    <div class="news-box white">
+      <div class="home-title"><span>新闻资讯</span>
+        <router-link to="/news" class="btn more">查看更多<img src="../assets/icon-right.png"></router-link>
+      </div>
       <ul>
-        <li v-for="(item,index) in collect_cate" :key="index" @click="goToCollect(item.id,item.cate_name)"
-            :style="'background-image:url('+item.pic+')'">
-          {{item.cate_name}}
-        </li>
+        <router-link :to="{path:'/new-detail',query:{id:item.id}}" tag="li" v-for="(item,index) in news" :key="index">
+          <div class="cont">
+            <h3 :class="index===0?'one-line-ellipsis':'two-line-ellipsis'">
+              {{item.title}}</h3>
+            <p><span>{{item.author}}</span><span>{{item.create_time}}</span></p>
+          </div>
+          <div class="img" :style="'background-image: url('+item.pic+')'"></div>
+        </router-link>
       </ul>
     </div>
 
-    <!--公共的标题-->
-    <div class="title">
-      <span>|</span>
-      <h3>瓷艺园介绍</h3>
-      <span>|</span>
-    </div>
-    <div class="brief">
-      <div class="img"><img :src="about.intro_cover+'?x-oss-process=image/resize,w_750'"/></div>
-      <div class="brief-cont">
-        <p>{{about.desc}}</p>
+    <!--唐博简介-->
+    <div class="brief-box white">
+      <div class="home-title"><span>唐博简介</span>
+        <!--<router-link to="/about" class="btn more">查看更多<img src="../assets/icon-right.png"></router-link>-->
       </div>
-      <div class="video-box">
-        <video-player class="video-player vjs-custom-skin"
-                      ref="videoPlayer"
-                      :playsinline="true"
-                      :options="playerOptions"
-                      @play="onPlayerPlay($event)"
-                      @pause="onPlayerPause($event)">
-        </video-player>
-      </div>
+      <div class="brief-img"><img :src="about.brief_img" alt=""></div>
+      <p>{{about.desc}}</p>
     </div>
-    <Footer></Footer>
+
+    <!--footer-->
+    <div class="footer">
+      <div class="cont">
+        <p>地址：{{about.address}}</p>
+        <p>技术支持：<a href="https://www.wcip.net">山海文化有限公司</a></p>
+        <p>电话：{{about.tel}}</p>
+      </div>
+      <!--<div class="logo"><img :src="about.logo" alt=""></div>-->
+    </div>
   </div>
 </template>
 
 <script>
-  import 'swiper/dist/css/swiper.css'// 这里注意具体看使用的版本是否需要引入样式，以及具体位置。
-  import { swiper, swiperSlide } from 'vue-awesome-swiper' // 引入slider组件
+  import { Swiper, SwiperSlide } from 'vue-awesome-swiper'
+  import 'swiper/css/swiper.css'
 
+  var _self;
   export default {
     name: 'Home',
     components: {
-      swiper,
-      swiperSlide,
+      'swiper': Swiper,
+      'swiper-slide': SwiperSlide
     },
     data() {
       return {
-        banner: [],
-        swiperOption: {
-          loop: true,
+        swiper: [],
+        //首页顶部轮播图
+        banner: {
           autoplay: {
-            delay: 3000,
+            delay: 2000,
             stopOnLastSlide: false,
-            disableOnInteraction: false
+            disableOnInteraction: false,
           },
           speed: 800,
           direction: 'horizontal',
-          grabCursor: true,
+          //分页器设置
           pagination: {
-            el: '.swiper-pagination',
+            el: ".swiper-pagination",
             clickable: true,
-            type: 'bullets'
+            type: "bullets"
+          },
+          on: {
+            click() {
+              let url = _self.swiper[this.realIndex].url;
+              _self.utils.jump(_self, url);
+            }
           }
         },
-        // 资讯
-        information: [],
-        informationOption: {
-          loop: true,
-          autoplay: {
-            delay: 3000,
-            stopOnLastSlide: false,
-            disableOnInteraction: false
-          },
-          speed: 800,
-          direction: 'vertical',
-          grabCursor: true
+
+        collection: [],
+        //首页馆藏轮播图配置
+        collectSwiper: {
+          slidesPerView: 2.4,
+          spaceBetween: 7
         },
 
-        cate_length: 4,//显示在首页的分类个数
-        collect_cate: [],//藏品分类
-
-        about: {},//关于瓷艺园
-        playerOptions: {//视频播放器配置
-          autoplay: false,
-          muted: false, // 默认情况下将会消除任何音频。
-          loop: true, // 导致视频一结束就重新开始。
-          preload: 'auto', // 建议浏览器在<video>加载元素后是否应该开始下载视频数据。auto浏览器选择最佳行为,立即开始加载视频（如果浏览器支持）
-          language: 'zh-CN',
-          aspectRatio: '16:9', // 将播放器置于流畅模式，并在计算播放器的动态大小时使用该值。值应该代表一个比例 - 用冒号分隔的两个数字（例如"16:9"或"4:3"）
-          fluid: true, // 当true时，Video.js player将拥有流体大小。换句话说，它将按比例缩放以适应其容器。
-          sources: [{
-            type: 'video/mp4',
-            src: ''
-          }],
-          // 你的封面地址
-          poster: '',
-          width: document.documentElement.clientWidth,
-          // 允许覆盖Video.js无法播放媒体源时显示的默认信息。
-          notSupportedMessage: '此视频暂无法播放，请稍后再试'
-        },
+        news: [],//新闻资讯列表
+        about: {},//关于我们的数据
       }
     },
     mounted() {
-      this.utils.ajax(this, 'index/slideList').then((slides) => {//获取轮播图列表
-        this.utils.aliyun_format(slides, 'pic');
-        this.banner = slides;
-      });
-      this.utils.ajax(this, 'index/articleList', { page: 1, perpage: 5 }).then((res) => {//获取资讯列表
-        this.information = res.list;
-      });
-      this.utils.ajax(this, 'index/collectCateList').then((res) => {//获取馆藏精品分类
-        this.utils.aliyun_format(res, 'pic', 2);
-        let arr = [];
-        for (let i = 0; i < this.cate_length; i++) {
-          if (res[i]) {
-            arr.push(res[i]);
-          }
-        }
-        this.collect_cate = arr;
-      });
-      this.utils.ajax(this, 'index/aboutUs').then((res) => {//获取瓷艺园简介
-        this.playerOptions.sources = [{
-          type: 'video/mp4',
-          src: res.video_url
-        }];
-        this.playerOptions.poster = res.intro_cover + '?x-oss-process=image/resize,w_750';
-        this.utils.aliyun_format(res, 'logo');
-        this.about = res;
-      });
+      _self = this;
+      this.getSlides();
+      this.getCollectList();
+      this.getArticleList();
+      this.getAboutUs();
     },
     methods: {
-      openInfoDetail(id) {// 点击前往资讯详情
-        this.$router.push({
-          name: 'newsdetail',
-          query: {
-            id: id
-          }
+      //获取轮播图列表
+      getSlides() {
+        this.utils.ajax(this, 'api/slideList').then(arr => {
+          this.utils.aliyun_format(arr, 'pic');
+          this.swiper = arr;
         })
       },
-
-      goToCollect(id, name) {// 点击前往藏品分类列表
-        this.$router.push({
-          path: '/collectionsclassify',
-          query: {
-            id: id,
-            name: name
+      //获取精品馆藏列表
+      getCollectList() {
+        this.utils.ajax(this, 'api/collectList').then(obj => {
+          this.utils.aliyun_format(obj.list, 'cover');
+          this.collection = obj.list;
+          // console.log(obj.count);
+          // console.log(obj.list);
+        });
+      },
+      //获取新闻资讯列表
+      getArticleList() {
+        this.utils.ajax(this, 'api/articleList', { page: 1, perpage: 4 }).then(obj => {
+          this.utils.aliyun_format(obj.list, 'pic');
+          for (let i = 0; i < obj.list.length; i++) {
+            obj.list[i].create_time = this.utils.date_format(new Date(obj.list[i].create_time).getTime(), 'yyyy-MM-dd');
           }
+          this.news = obj.list;
+          // console.log(obj.list);
+        });
+      },
+      // 获取关于我们的后台数据
+      getAboutUs() {
+        this.utils.ajax(this, 'api/aboutUs').then(obj => {
+          this.utils.aliyun_format(obj, 'logo');
+          obj.brief_img = this.config.aliyun + 'static/tcy.jpg';
+          this.about = obj;
+          // console.log(obj)
         })
-      },
-      onPlayerPlay() {
-        console.log('播放')
-      },
-      onPlayerPause() {
-        console.log('暂停')
-      },
+      }
     }
   }
 </script>
-<style scoped lang="scss">
+
+<style lang="scss" scoped>
   .home {
-    /*公共的标题*/
-    .title {
-      height: 80px;
+    .home-title {
+      font-size: 40px;
+      color: #333333;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
+      margin: 29px 24px;
+      font-weight: bold;
 
-      span {
-        line-height: 30px;
+      .btn {
         font-weight: normal;
-        color: #000;
-        font-size: 28px;
-      }
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 150px;
+        height: 60px;
+        background-color: #d0a34d;
+        border-radius: 10px;
+        font-size: 26px;
+        color: #ffffff;
 
-      h3 {
-        font-size: 38px;
-        padding: 0 20px;
-        font-weight: normal;
-        color: #000;
+        &.more {
+          background-color: #ffffff;
+          color: #d0a34d;
+          width: auto;
+
+          img {
+            width: auto;
+            height: 55%;
+            margin-left: 10px;
+          }
+        }
       }
     }
 
     /*轮播图*/
-    .swiper {
-      height: 350px;
+    .swiper-box {
+      height: 450px;
 
-      .swiper-wrap {
+      .swiper {
         height: 100%;
 
-        .my-swiper-item {
+        .swiper-item {
           background-size: cover;
           background-position: center;
           background-repeat: no-repeat;
+        }
 
-          .router-link {
-            display: block;
-            width: 100%;
-            height: 100%;
+        /deep/ .my-swiper-pagination {
+          .swiper-pagination-bullet {
+            width: 24px;
+            height: 4px;
+            border-radius: unset;
+            background-color: rgba(0, 0, 0, 0.4);
+
+            &.swiper-pagination-bullet-active {
+              background-color: rgba(0, 0, 0, 1);
+            }
           }
         }
       }
     }
 
-    /*资讯*/
-    .information {
-      height: 80px;
+    /*门票预约*/
+    .ticket-booking {
+      margin-top: 14px;
+      background-image: url("../assets/bg-ticket-index.png");
+      background-position: 95% 80%;
+      background-repeat: no-repeat;
+      background-size: 151px 142px;
       overflow: hidden;
-      margin: 10px 40px;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
 
-      .information-title {
-        width: 70px;
-        height: 45px;
-        flex-shrink: 0;
-        background-color: #000000;
-        border-radius: 10px;
-        font-size: 24px;
-        color: #ffffff;
-        margin-right: 22px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+
+      p {
+        font-size: 26px;
+        margin: 61px 24px 29px;
+        line-height: 40px;
+
+        span {
+          display: block;
+          color: #5cc66d;
+        }
       }
+    }
 
-      .information-wrap {
-        height: 100%;
-        flex-grow: 0;
+    /*精品馆藏*/
+    .collection {
+      overflow: hidden;
+      margin-top: 14px;
 
-        .information-wrap-item {
+      .collect-swiper-box {
+        height: 250px;
+        margin: 0 0 30px 24px;
+
+        .collect-swiper {
+          width: 100%;
           height: 100%;
-          display: flex;
-          align-items: center;
 
-          p {
-            font-size: 26px;
-            color: #333333;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+          .collect-swiper-item {
+            &:last-child {
+              .collect-item {
+                margin-right: 24px;
+              }
+            }
+
+            .collect-item {
+              height: 100%;
+
+              .img {
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                height: 200px;
+                border-radius: 10px;
+              }
+
+              p {
+                margin-top: 16px;
+                color: #333333;
+                font-size: 28px;
+              }
+            }
           }
         }
       }
     }
 
-    /*藏品分类*/
-    .collect-cate {
-      margin: 10px 40px 40px;
+    /*新闻资讯*/
+    .news-box {
+      overflow: hidden;
+      margin-top: 14px;
 
       ul {
-        display: flex;
-        /*justify-content: space-between;*/
-        flex-wrap: wrap;
+        margin: 51px 24px 26px;
 
         li {
-          background-repeat: no-repeat;
-          background-position: center;
-          background-size: cover;
-          width: 155px;
-          height: 155px;
-          background-color: #000000;
-          border-radius: 10px;
-          color: #fff;
-          font-size: 32px;
           display: flex;
-          justify-content: center;
-          align-items: center;
-          margin-top: 20px;
-          margin-right: 16.6px;
+          justify-content: space-between;
+          height: 120px;
+          margin-bottom: 24px;
 
-          &:nth-child(-n+4) {
-            margin-top: 0;
+          .cont {
+            flex-grow: 1;
+            height: 100%;
+            display: flex;
+            flex-flow: column;
+            justify-content: space-between;
+
+            h3 {
+              font-size: 28px;
+              color: #333333;
+              line-height: 34px;
+              font-weight: normal;
+            }
+
+            p {
+              font-size: 24px;
+              color: #999999;
+
+              span {
+                margin-right: 20px;
+              }
+            }
           }
 
-          &:nth-child(4n) {
-            margin-right: 0;
+          .img {
+            margin-left: 28px;
+            flex-shrink: 0;
+            width: 240px;
+            height: 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 10px;
+            background-size: cover;
+          }
+
+          &:first-child {
+            position: relative;
+            height: 350px;
+            z-index: 1;
+
+            .cont {
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              width: 100%;
+              height: 60px;
+              z-index: 3;
+
+              h3 {
+                background-color: rgba(0, 0, 0, 0.6);
+                height: 100%;
+                width: 100%;
+                line-height: 60px;
+                padding: 0 25px;
+                box-sizing: border-box;
+                color: #ffffff;
+              }
+
+              p {
+                display: none;
+              }
+            }
+
+            .img {
+              z-index: 2;
+              position: absolute;
+              margin: 0;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+            }
           }
         }
       }
     }
 
+    /*唐博简介*/
+    .brief-box {
+      overflow: hidden;
+      margin-top: 14px;
 
-    .brief {
-      margin: 10px 40px;
-
-      .img {
-        min-height: 300px;
+      .brief-img {
+        margin: 52px 24px 21px;
       }
 
-      .brief-cont {
-        margin-top: 26px;
-        margin-bottom: 20px;
+      p {
+        margin: 0 24px 34px;
+        font-size: 30px;
+        color: #333333;
+        line-height: 50px;
+        text-indent: 2em;
+        text-align: justify;
+      }
+    }
 
+    /*footer*/
+    .footer {
+      height: 300px;
+      display: flex;
+      flex-flow: column;
+      justify-content: center;
+      align-items: center;
+
+
+      .cont {
         p {
-          text-align: justify;
-          font-size: 26px;
-          line-height: 40px;
-          color: #666666;
+          /*text-align: center;*/
+          font-size: 24px;
+          margin: 30px 0;
+          color: #333333;
         }
       }
 
-      .video-box {
-        /deep/ .vjs-custom-skin {
-          .video-js .vjs-big-play-button {
-            width: 100px !important;
-            height: 100px !important;
-            border-radius: 50%;
-            z-index: 100;
-            margin: 0 !important;
-            transform: translate(-50%, -50%);
-            border: solid 1px #979797;
-          }
-
-          .video-js .vjs-big-play-button {
-            line-height: 100px !important;
-          }
-        }
+      .logo {
+        width: 156px;
+        margin-right: 71px;
       }
-
     }
   }
 </style>

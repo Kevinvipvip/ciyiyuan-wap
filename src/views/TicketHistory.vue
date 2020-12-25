@@ -1,6 +1,6 @@
 <template>
   <div class="history page">
-    <!--<div class="common-title">历史订单</div>-->
+    <div class="common-title">历史订单</div>
     <div class="tip" v-if="count === 0">您还没有预约门票，
       <router-link to="/booking">立即预约</router-link>
     </div>
@@ -16,7 +16,7 @@
               <p>预约编号：{{item.pay_order_sn}}</p>
               <p>预约时间：{{item.create_time}}</p>
               <p>参观日期：{{item.use_date}}</p>
-              <p>总金额：{{item.total_price==='0.00'?0:item.total_price}}</p>
+              <p>总金额：￥{{item.total_price}}</p>
             </div>
             <div class="icon"><img :src="right"/></div>
           </div>
@@ -30,7 +30,7 @@
   export default {
     data() {
       return {
-        right: this.config.aliyun + '/static/ticket-right.png',
+        right: this.config.aliyun + 'static/ticket-right.png',
         count: 0,
         history: []
       };
@@ -42,12 +42,12 @@
           this.count = list.count;
           for (let i = 0; i < list.list.length; i++) {
             // list.list[i].status = this.utils.get_status(list.list[i].refund, list.list[i].check, list.list[i].expire);
-            list.list[i].status_pic = this.utils.get_status(list.list[i].refund, list.list[i].check, list.list[i].expire, 'img');
+            list.list[i].status_pic = this.utils.get_status(list.list[i].status, list.list[i].refund, list.list[i].check, list.list[i].expire, 'img');
             list.list[i].create_time = this.utils.date_format(list.list[i].create_time, 'yyyy-MM-dd hh:mm:ss')
           }
 
           this.history = list.list;
-          console.log(list)
+          // console.log(list)
         });
       } else {
         this.$router.push({ name: 'login', query: { url: this.$route.path, params: this.$route.query } });
@@ -60,7 +60,6 @@
 <style lang="scss" scoped>
   .history {
     overflow: hidden;
-    background-color: rgb(254,249,244);
 
     .tip {
       font-size: 28px;

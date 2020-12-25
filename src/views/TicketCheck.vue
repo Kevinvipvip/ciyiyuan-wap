@@ -1,6 +1,6 @@
 <template>
   <div class="ticket-detail page">
-    <!--<div class="common-title">订单详情</div>-->
+    <div class="common-title">订单详情</div>
     <div class="detail">
       <div class="status">{{detail.status}}</div>
       <p>预约编号：{{detail.pay_order_sn}}</p>

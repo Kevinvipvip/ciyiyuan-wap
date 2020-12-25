@@ -15,7 +15,7 @@ module.exports = {
       .loader('px2rem-loader')
       .before('postcss-loader')
       .options({ remUnit: 75, remPrecision: 8 })
-      .end()
+      .end();
 
     config.module
       .rule('images')
@@ -34,5 +34,5 @@ function addStyleResource(rule) {
       patterns: [
         path.resolve(__dirname, './src/style/common.scss')
       ]
-    });
+    })
 }

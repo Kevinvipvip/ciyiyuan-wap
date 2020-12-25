@@ -4,7 +4,7 @@
     <div class="login-box">
       <div class="input">
         <label for="tel">手机号</label>
-        <div class="ipt-box"><input type="text" v-model="tel" id="tel" maxlength="11" placeholder="请输入手机号"
+        <div class="ipt-box"><input type="number" v-model="tel" id="tel" maxlength="11" placeholder="请输入手机号"
                                     @blur="blur_reg_tel" oninput="value=value.replace(/[^\d]/g,'')"></div>
       </div>
       <div class="input">
@@ -22,7 +22,6 @@
       </div>
 
       <div class="btn btn-login" @click="login">登录</div>
-      <div class="btn btn-wx" @click="wx_auth">微信登录</div>
     </div>
   </div>
 </template>
@@ -37,69 +36,22 @@
         save: '',
         code: '',
         code_is_click: true,
-        clock: 60,
-
-        auth_code: '',
+        no_second: true,
+        clock: 60
       };
     },
     mounted() {
-      let params = this.utils.get_params();
-      this.auth_code = params['code'];
-      if (this.auth_code) {
-        console.log(this.auth_code, '111');
-        this.wx_auth_login();
-      }
       // console.log(this.$route.query)
       // console.log(this.$route)
     },
     methods: {
-      // 切换安全码
       change_save() {
         let random = Math.random();
         this.save_img = this.save_img + '?' + random;
         this.save = '';
       },
 
-      // 微信授权登录
-      wx_auth() {
-        if (!this.auth_code) {
-          this.utils.auth(this.$route.fullPath);
-        } else {
-          console.log(this.auth_code, '222');
-          this.wx_auth_login();
-        }
-
-      },
-
-      wx_auth_login() {
-        this.$toast.loading({
-          mask: true,
-          duration: 10000,
-          message: '登录中'
-        });
-
-        this.utils.login(this.auth_code).then(res => {
-          console.log(res);
-          localStorage.setItem('token', res.token);
-          localStorage.setItem('tel', res.tel);
-          localStorage.setItem('avatar', res.avatar);
-          localStorage.setItem('nickname', res.nickname);
-          localStorage.setItem('uid', res.uid);
-          localStorage.setItem('wxauth', res.wxauth);
-          this.$toast.clear();
-          this.$router.replace({
-            path: this.$route.query.url,
-            query: this.$route.query.params
-          })
-        }, (err) => {
-          console.log(err);
-          this.$toast.clear();
-          location.replace('/wap/')
-        })
-      },
-
-      // 获取短信验证码
-      get_code() {
+      get_code() {//获取短信验证码
         if (!this.tel.trim()) {
           this.$toast("请输入手机号")
         } else if (!this.save.trim()) {
@@ -107,25 +59,31 @@
         } else if (!this.config.tel_reg.test(this.tel)) {
           this.$toast("请输入正确的手机号");
         } else {
-          this.utils.ajax(this, 'login/sendSms', { tel: this.tel, vcode: this.save }).then(() => {
-            this.$dialog.alert({
-              message: '短信已发送',
-              confirmButtonColor: '#b38146'
-            }).then(() => {
+          if (this.no_second) {
+            this.no_second = false;
+            this.utils.ajax(this, 'login/sendSms', { tel: this.tel, vcode: this.save }, [47]).then(() => {
+
               this.code_is_click = false;
               let interval = setInterval(() => {
                 this.clock--;
                 if (this.clock === 0) {
                   this.code_is_click = true;
+                  this.no_second = true;
                   window.clearInterval(interval)
                 }
               }, 1000);
+
+            }).catch((err) => {
+              this.$dialog.alert({
+                message: err.data,
+                confirmButtonColor: '#b38146'
+              }).then(() => {
+                this.no_second = true;
+              })
             });
-          });
+          }
         }
       },
-
-      // 手机号登录
       login() {
         if (!this.tel.trim()) {
           this.$toast("请输入手机号")
@@ -137,14 +95,11 @@
           this.$toast("请输入正确的手机号");
         } else {
           let post = { tel: this.tel, code: this.code };
-          this.utils.ajax(this, 'login/mobileLogin', post).then(res => {
+          this.utils.ajax(this, 'login/bindUser', post).then(res => {
             console.log(res);
             localStorage.setItem('token', res.token);
             localStorage.setItem('tel', res.tel);
-            localStorage.setItem('avatar', res.avatar);
-            localStorage.setItem('nickname', res.nickname);
-            localStorage.setItem('uid', res.uid);
-            localStorage.setItem('wxauth', res.wxauth);
+            localStorage.setItem('wx_openid', res.wx_openid || '');
             this.$dialog.alert({
               message: '登录成功',
               confirmButtonColor: '#b38146'
@@ -249,10 +204,6 @@
         box-shadow: 0 10px 25px 0 rgba(179, 129, 70, 0.35);
         border-radius: 10px;
         margin: 300px auto 0;
-
-        &.btn-wx {
-          margin-top: 20px;
-        }
       }
     }
   }
