@@ -15,6 +15,22 @@
       </div>
     </div>
 
+    <div class="ticket-interval" v-if="show_interval">
+      <h3>入馆时段</h3>
+      <ul>
+        <li v-for="(item,index) in paiqi_detail" :key="'paiqi-detail'+index" :class="interval_id===item.id?'on':''">
+          <p v-if="parseInt(item.surplus)===0">
+            <span>{{item.start_time}} - {{item.end_time}}</span>
+            <span>余{{item.surplus}}</span>
+          </p>
+          <p v-else @click="interval_id=item.id">
+            <span>{{item.start_time}} - {{item.end_time}}</span>
+            <span>余{{item.surplus}}</span>
+          </p>
+        </li>
+      </ul>
+    </div>
+
     <div class="tourist-info">
       <h3>观众信息</h3>
       <div class="btn-add" @click="fn_add_tourist" v-if="tourist.length < 6">+添加参观者（限6人)</div>
@@ -84,11 +100,11 @@
         paiqi: [],
         price: '0.00',
         date: '',
-        submit_date: '',
         show: false, add_tour: false,
 
         comfig_type: 1,//是否是点击提交是弹出的日历，是则提示toast
-
+        show_interval: false,//是否显示时段
+        interval_id: 0,//选择的时段id
         tourist: [],//观众列表
         btn_click: true,
 
@@ -185,13 +201,26 @@
           }
         })
       },
-
+// 获取提交的参观人id
+      submitVisitor() {
+        let arr = [];
+        for (let i = 0; i < this.tourist.length; i++) {
+          arr.push(this.tourist[i].id);
+        }
+        return arr.join(',');
+      },
       // 点击预约按钮
       submit() {
         if (this.token) {
           if (!this.date) {
             this.comfig_type = 2;
             this.get_calender();
+            return;
+          }if (this.interval_id===0){
+            this.$dialog.alert({
+              message: "请选择入馆时段",
+              confirmButtonColor: '#b38146'
+            })
             return;
           }
           if (this.tourist.length <= 0) {
@@ -203,7 +232,8 @@
             if (this.btn_click) {
               this.btn_click = false;
               let data = {
-                use_date: this.submit_date,
+                visitor_ids: this.submitVisitor(),
+                time_id:this.interval_id
               };
               this.$dialog.confirm({
                 message: '您即将提交' + this.tourist.length + '个人的预约门票',
@@ -226,7 +256,6 @@
                     }).catch(() => {
                       this.btn_click = true;
                       this.date = '';
-                      this.submit_date = '';
                       this.tourist = [];
                     });
                   } else {
@@ -269,11 +298,11 @@
       onConfirm(date) {
         this.show = false;
         this.btn_click = true;
-        this.date = this.formatDate(date) + ' 9:00-16:00';
-        this.submit_date = this.formatDate(date);
+        this.date = this.formatDate(date);
         if (this.comfig_type === 2) {
           this.$toast('日期选择成功，再次点击购买');
         }
+        this.getPaiqiDetail()
       },
       formatter(day) {
         let date_str = this.utils.date_format(day.date, 'yyyy-MM-dd');
@@ -313,6 +342,28 @@
             })
           }
         })
+      },
+
+      // 获取入馆时段
+      getPaiqiDetail() {
+        this.utils.ajax(this, 'ticket/paiqiDetail', { use_date: this.date }).then((res) => {
+          console.log(res);
+          if (res.time_list.length) {
+            this.show_interval = true;
+            this.paiqi_detail = res.time_list;
+            // if (id) {
+            //   for (let i = 0; i < res.time_list.length; i++) {
+            //     if (res.time_list[i].id === id) {
+            //       this.two_date = res.use_date + " " + res.time_list[i].start_time + "-" + res.time_list[i].end_time;
+            //       if (this.date !== '请选择')
+            //         this.succ_date = this.utils.date_format(new Date(this.date), 'MM月dd日 周w') + " " + res.time_list[i].start_time + "-" + res.time_list[i].end_time;
+            //     }
+            //   }
+            // }
+          } else {
+            this.show_interval = false;
+          }
+        });
       }
     }
   };
@@ -360,6 +411,48 @@
         }
       }
 
+    }
+
+    /*入馆时段*/
+    .ticket-interval {
+      margin-bottom: 14px;
+      overflow: hidden;
+      background-color: #ffffff;
+
+      h3 {
+        margin: 40px 26px 0;
+        font-size: 32px;
+        color: #333333;
+        font-weight: normal;
+      }
+
+      ul {
+        display: flex;
+        align-items: center;
+        margin: 40px 26px;
+        flex-wrap: wrap;
+
+        li {
+          border-radius: 10px;
+          border: 2px solid #efefef;
+          margin: 20px;
+          color: #666666;
+
+          p {
+            padding: 10px 20px;
+            font-size: 26px;
+
+            span:first-child {
+              margin-right: 40px;
+            }
+          }
+
+          &.on {
+            color: #cf903a;
+            border-color: #cf903a;
+          }
+        }
+      }
     }
 
     .tourist-info {

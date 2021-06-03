@@ -14,7 +14,6 @@
         this.tip = '请前往微信浏览器支付'
       } else {
         let pay_order_sn = this.$route.query.pay_order_sn;
-        console.log(localStorage.getItem('wx_openid'));
         if (!localStorage.getItem('wx_openid')) {
           let params = this.utils.get_params();
           if (!params['code']) {
@@ -22,7 +21,6 @@
           } else {
             this.utils.ajax(this, 'weixin/bindWeixin', { code: params['code'] }).then(res => {
               localStorage.setItem('wx_openid', res.wx_openid);
-              console.log(res);
               this.wx_pay(pay_order_sn);
             });
           }
