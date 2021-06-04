@@ -5,7 +5,7 @@
       <div class="status">{{detail.status_tip}}</div>
       <p>预约编号：{{detail.pay_order_sn}}</p>
       <p>预约时间：{{detail.create_time}}</p>
-      <p>参观日期：{{detail.use_date}}</p>
+      <p>参观日期：{{detail.use_date}} {{detail.start_time}}-{{detail.end_time}}</p>
       <p>总金额：￥{{detail.total_price}}</p>
     </div>
     <ul>
@@ -152,6 +152,7 @@
       // 获取订单详情
       getOrderDetail() {
         this.utils.ajax(this, 'my/ticketOrderDetail', { order_id: this.id }).then((detail) => {
+          console.log(detail)
           detail.status_tip = this.utils.get_status(detail.status, detail.refund, detail.check, detail.expire);
           detail.create_time = this.utils.date_format(detail.create_time, 'yyyy-MM-dd hh:mm:ss');
           detail.btn_type = this.utils.get_status(detail.status, detail.refund, detail.check, detail.expire, 'type');
