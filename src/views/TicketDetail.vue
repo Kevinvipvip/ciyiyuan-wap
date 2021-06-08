@@ -166,19 +166,7 @@
                     detail.list[i].status_tip = '待检票';
                     detail.list[i].status_type = 1;
                   } else {
-                    // let now_timestamp = Math.ceil(new Date().getTime() / 1000);
-                    // let check_timestamp = detail.list[i].check_time;
                     detail.list[i].check_time = this.utils.date_format(detail.list[i].check_time, 'yyyy-MM-dd hh:mm:ss');
-                    // if ((now_timestamp - check_timestamp) <= 60) {
-                    //   detail.list[i].status_type = 1;
-                    //   if (detail.list[i].diff_time !== 1) {
-                    //     this.check_list_clock = setTimeout(() => {
-                    //       this.detail.list[i].status_type = 2;
-                    //       console.log(this.detail.list[i].status_type);
-                    //       window.clearTimeout(this.check_list_clock);
-                    //     }, detail.list[i].diff_time);
-                    //   }
-                    // }
                     detail.list[i].status_type = 2;
                     detail.list[i].status_tip = '已核销';
                   }
@@ -196,7 +184,6 @@
             }
           }
           this.detail = detail;
-          // console.log(this.detail)
         })
       },
 
@@ -235,10 +222,8 @@
               }, 2000);
             }
           } else {
-            // this.ckeck_clock = setTimeout(() => {
             this.show_qrcode = false;
             this.getOrderDetail();
-            // }, res.diff_time);
           }
         });
       }
