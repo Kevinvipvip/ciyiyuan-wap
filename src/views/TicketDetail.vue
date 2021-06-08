@@ -6,6 +6,7 @@
       <p>预约编号：{{detail.pay_order_sn}}</p>
       <p>预约时间：{{detail.create_time}}</p>
       <p>参观日期：{{detail.use_date}}</p>
+      <p>参观时段：{{`${detail.start_time} - ${detail.end_time}`}}</p>
       <p>总金额：￥{{detail.total_price}}</p>
     </div>
     <ul>
@@ -155,6 +156,7 @@
           detail.status_tip = this.utils.get_status(detail.status, detail.refund, detail.check, detail.expire);
           detail.create_time = this.utils.date_format(detail.create_time, 'yyyy-MM-dd hh:mm:ss');
           detail.btn_type = this.utils.get_status(detail.status, detail.refund, detail.check, detail.expire, 'type');
+          console.log(detail)
           for (let i = 0; i < detail.list.length; i++) {
             detail.list[i].is_checked = false;
             if (detail.status === 1) {
@@ -164,21 +166,20 @@
                     detail.list[i].status_tip = '待检票';
                     detail.list[i].status_type = 1;
                   } else {
-                    let now_timestamp = Math.ceil(new Date().getTime() / 1000);
-                    let check_timestamp = detail.list[i].check_time;
+                    // let now_timestamp = Math.ceil(new Date().getTime() / 1000);
+                    // let check_timestamp = detail.list[i].check_time;
                     detail.list[i].check_time = this.utils.date_format(detail.list[i].check_time, 'yyyy-MM-dd hh:mm:ss');
-                    if ((now_timestamp - check_timestamp) <= 60) {
-                      detail.list[i].status_type = 1;
-                      if (detail.list[i].diff_time !== 1) {
-                        this.check_list_clock = setTimeout(() => {
-                          this.detail.list[i].status_type = 2;
-                          console.log(this.detail.list[i].status_type);
-                          window.clearTimeout(this.check_list_clock);
-                        }, detail.list[i].diff_time);
-                      }
-                    } else {
-                      detail.list[i].status_type = 2;
-                    }
+                    // if ((now_timestamp - check_timestamp) <= 60) {
+                    //   detail.list[i].status_type = 1;
+                    //   if (detail.list[i].diff_time !== 1) {
+                    //     this.check_list_clock = setTimeout(() => {
+                    //       this.detail.list[i].status_type = 2;
+                    //       console.log(this.detail.list[i].status_type);
+                    //       window.clearTimeout(this.check_list_clock);
+                    //     }, detail.list[i].diff_time);
+                    //   }
+                    // }
+                    detail.list[i].status_type = 2;
                     detail.list[i].status_tip = '已核销';
                   }
                 } else {
@@ -234,10 +235,10 @@
               }, 2000);
             }
           } else {
-            this.ckeck_clock = setTimeout(() => {
-              this.show_qrcode = false;
-              this.getOrderDetail();
-            }, res.diff_time);
+            // this.ckeck_clock = setTimeout(() => {
+            this.show_qrcode = false;
+            this.getOrderDetail();
+            // }, res.diff_time);
           }
         });
       }

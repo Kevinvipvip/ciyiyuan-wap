@@ -15,7 +15,7 @@
             <div class="item-cont">
               <p>预约编号：{{item.pay_order_sn}}</p>
               <p>预约时间：{{item.create_time}}</p>
-              <p>参观日期：{{item.use_date}}</p>
+              <p>参观日期：{{`${item.use_date}  ${item.start_time} - ${item.end_time}`}}</p>
               <p>总金额：￥{{item.total_price}}</p>
             </div>
             <div class="icon"><img :src="right"/></div>
@@ -47,7 +47,7 @@
           }
 
           this.history = list.list;
-          // console.log(list)
+          console.log(list)
         });
       } else {
         this.$router.push({ name: 'login', query: { url: this.$route.path, params: this.$route.query } });
